@@ -29,16 +29,17 @@ Controls:
 #define PRESS_MOMENTARY 0
 #define PRESS_AND_HOLD 1
 
-App app = {initObject(), initTimer(), initTimer(), 0, 0, 0, {}, 0};
+App app = {initObject(), initTimer(), initTimer(), 0, 0, 0, {}, 0, 3};
 
 UserInputHandler userInputHandler = {initObject(), {}, 0};
-Tone_CTRL tone_ctrl = {initObject(), VOLUME, 0, 0, T_1000_Hz, 0, 0, 0};
-MusicPlayer music_player = {initObject(), DEFAULT_KEY, DEFAULT_TEMPO, 0, 0};
+Tone_CTRL tone_ctrl = {initObject(), VOLUME, 0, 1, T_1000_Hz, 0, 0, 0};
+MusicPlayer music_player = {initObject(), DEFAULT_KEY, DEFAULT_TEMPO, 0, 0, 1, 0};
 Distortion distortion = {initObject(), 1000, 0};
 Serial sci0 = initSerial(SCI_PORT0, &app, reader);
 Can can0 = initCan(CAN_PORT0, &app, receiver);
 SysIO sio0 = initSysIO(SIO_PORT0, &app, sio_receive);
 
+int network_size = 2;
 int base_freq_indices[32] = {0, 2, 4, 0, 0, 2, 4, 0, 4, 5, 7, 4,  5, 7, 7,  9,
                              7, 5, 4, 0, 7, 9, 7, 5, 4, 0, 0, -5, 0, 0, -5, 0};
 // freq indices corresponding to -10 to 14
@@ -50,6 +51,7 @@ char note_lengths[32] = {'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'a', 'b',
                          'c', 'c', 'a', 'a', 'a', 'a', 'b', 'a', 'a', 'b'};
 int min_index = -10;
 int max_index = 14;
+
 Time hold_time;
 Msg message;
 

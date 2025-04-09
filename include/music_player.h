@@ -14,6 +14,8 @@ typedef struct {
   int tempo;
   int is_playing;
   int is_led_blinking;
+  int nth_note;
+  int cur_note_modulo;
 } MusicPlayer;
 
 void play_music(MusicPlayer *music_player, int _);

@@ -83,7 +83,7 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
       ASYNC(&music_player, play_music, 0);
     msg.length = 1;
     msg.buff[0] = 'p';
-    CAN_SEND(&can0, &msg);
+    //CAN_SEND(&can0, &msg);
     break;
   case 's':
     if (app.mode == 0)

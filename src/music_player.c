@@ -47,20 +47,25 @@ void play_next_note(MusicPlayer *music_player, int index) {
   }
 
   int note_duration_ms = (60000.0 / music_player->tempo) * note_length;
-
   SYNC(&tone_ctrl, set_period, half_period);
-
-  // MUTE
-  SEND(MSEC(note_duration_ms - MAX_GAP_DURATION),
-       MSEC(note_duration_ms - MIN_GAP_DURATION), &tone_ctrl, mute_tone, 0);
+  
 
   // UNMUTE
-  SEND(MSEC(note_duration_ms - 0.1), MSEC(note_duration_ms), &tone_ctrl,
-       unmute_tone, 0);
+  if (music_player->cur_note_modulo == music_player->nth_note) {
+    SEND(0, MSEC(0.1), &tone_ctrl, unmute_tone, 0);
+  }
+
+  // MUTE
+  SEND(MSEC(note_duration_ms - 75),
+       MSEC(note_duration_ms - 75), &tone_ctrl, mute_tone, 0);
+
 
   // RECURSIVE CALL
   SEND(MSEC(note_duration_ms), 0, music_player, play_next_note, index + 1);
 
+  print("Cur_note_modulo:%d\n", music_player->cur_note_modulo);
+  music_player->cur_note_modulo = (music_player->cur_note_modulo + 1) % network_size;
+  print("Cur_note_modulo after:%d\n", music_player->cur_note_modulo);
 }
 
 void change_key(MusicPlayer *music_player, int key) { music_player->key = key; }

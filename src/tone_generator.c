@@ -20,8 +20,7 @@ void tone_gen(Tone_CTRL *tone_ctrl, int num) {
   num = (num != 0 || tone_ctrl->mute || tone_ctrl->user_mute)
             ? 0
             : tone_ctrl->volume;
-  SEND(USEC(tone_ctrl->T_half_us), MSEC(500), tone_ctrl, tone_gen,
-       num); // Problem 2
+  SEND(USEC(tone_ctrl->T_half_us), MSEC(500), tone_ctrl, tone_gen, num); 
 }
 
 void set_note_duration(Tone_CTRL *tone_ctrl, int duration) {

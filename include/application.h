@@ -30,6 +30,9 @@ typedef struct {
   int inter_arrival_times[3];
   int tap_count;
   int bounce_flag;
+  int rank;
+  int ranks[2];
+  int conductor;
 } App;
 
 extern App app;
@@ -40,6 +43,7 @@ extern char note_lengths[32];
 extern int min_index;
 extern int max_index;
 extern int mode;
+extern int network_size;
 
 void reader(App *, int);
 void receiver(App *, int);
