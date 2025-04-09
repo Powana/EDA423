@@ -29,7 +29,7 @@ void play_next_note(MusicPlayer *music_player, int index) {
 
   if (index > 31)
     index = 0;
-
+  music_player->note_idxx = index;
   int half_period =
       periods[base_freq_indices[index] - MIN_FREQ_INDEX + music_player->key];
 
@@ -51,28 +51,50 @@ void play_next_note(MusicPlayer *music_player, int index) {
   
 
   // UNMUTE
-  if (music_player->cur_note_modulo == music_player->nth_note) {
+  if (music_player->cur_note_modulo == music_player->nth_note_to_play) {
     SEND(0, MSEC(0.1), &tone_ctrl, unmute_tone, 0);
   }
 
   // MUTE
   SEND(MSEC(note_duration_ms - 75),
-       MSEC(note_duration_ms - 75), &tone_ctrl, mute_tone, 0);
+    MSEC(note_duration_ms - 75), &tone_ctrl, mute_tone, 0);
 
 
   // RECURSIVE CALL
   SEND(MSEC(note_duration_ms), 0, music_player, play_next_note, index + 1);
 
-  print("Cur_note_modulo:%d\n", music_player->cur_note_modulo);
   music_player->cur_note_modulo = (music_player->cur_note_modulo + 1) % network_size;
-  print("Cur_note_modulo after:%d\n", music_player->cur_note_modulo);
+  music_player->current_note_segment = 0;
 }
 
 void change_key(MusicPlayer *music_player, int key) { music_player->key = key; }
 
-void change_tempo(MusicPlayer *music_player, int tempo) {
-  music_player->tempo = tempo;
+void change_tempo(MusicPlayer *music_player, int tempo) { music_player->tempo = tempo; }
+
+void im_alive_ping(MusicPlayer *music_player, int _) {
+  unsigned char note = music_player->note_idx;
+  CANMsg msg;
+  if (music_player->cur_note_modulo == music_player->nth_note_to_play) {
+    msg = {
+      .msgId = 8,
+      .nodeId = 3,
+      .length = 2,
+      .buff = {note, music_player->current_note_segment}
+    };
+      
+  } else {
+    msg = {
+      .msgId = 8,
+      .nodeId = 3,
+      .length = 0
+    };
+  }
+  music_player->current_note_segment++;
+  
+  CAN_SEND(&can0, &msg);
+  SEND(MSEC(600000.0 / music_player->tempo / 8), 0, music_player, im_alive_ping, 0);
 }
+
 
 void blink_led(MusicPlayer *self, int _) {
   if (!self->is_playing) {

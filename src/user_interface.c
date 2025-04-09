@@ -83,7 +83,7 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
       ASYNC(&music_player, play_music, 0);
     msg.length = 1;
     msg.buff[0] = 'p';
-    //CAN_SEND(&can0, &msg);
+    CAN_SEND(&can0, &msg);
     break;
   case 's':
     if (app.mode == 0)
@@ -98,41 +98,3 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
   }
 }
 
-void parse_can_input(UserInputHandler *self, int inputDigit) {
-  switch ((char)inputDigit) {
-  case 'k':
-    self->in_buffer[self->buf_index] = '\0';
-    num = atoi(self->in_buffer);
-    self->buf_index = 0;
-    num = num > 5 ? 5 : (num < -5 ? -5 : num);
-    print("Key: %d\n", num);
-    ASYNC(&music_player, change_key, num);
-    break;
-  case 't':
-    self->in_buffer[self->buf_index] = '\0';
-    num = atoi(self->in_buffer);
-    self->buf_index = 0;
-    num = num > 240 ? 240 : (num < 60 ? 60 : num);
-    print("Tempo: %d\n", num);
-    ASYNC(&music_player, change_tempo, num);
-    break;
-  case 'm':
-    ASYNC(&tone_ctrl, toggle_user_mute, 0);
-    break;
-  case 'i':
-    ASYNC(&tone_ctrl, adjust_volume, 1);
-    break;
-  case 'd':
-    ASYNC(&tone_ctrl, adjust_volume, -1);
-    break;
-  case 'p':
-    ASYNC(&music_player, play_music, 0);
-    break;
-  case 's':
-    ASYNC(&music_player, stop_music, 0);
-    break;
-  default:
-    self->in_buffer[self->buf_index++] = inputDigit;
-    break;
-  }
-}

@@ -12,10 +12,12 @@ typedef struct {
   Object super;
   int key;
   int tempo;
+  int note_idx;
   int is_playing;
   int is_led_blinking;
-  int nth_note;
   int cur_note_modulo;
+  int nth_note_to_play;
+  int current_note_segment;
 } MusicPlayer;
 
 void play_music(MusicPlayer *music_player, int _);

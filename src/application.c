@@ -163,11 +163,9 @@ void receiver(App *self, int unused) {
   SCI_WRITE(&sci0, msg.buff);
   SCI_WRITE(&sci0, "\n");
 
-  if (self->mode == 0)
-    return;
-
   for (int i = 0; i < msg.length; i++) {
-    SYNC(&userInputHandler, parse_can_input, msg.buff[i]);
+    parse_can_input(&msg, &music_player, self->conductor);
+    // SYNC(&userInputHandler, parse_can_input, msg.buff[i]);
   }
 }
 
