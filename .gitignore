@@ -1,2 +1,2 @@
-build/
-lab/build/
+./build/*
+./lab/build/*

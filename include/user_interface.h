@@ -13,6 +13,5 @@ typedef struct UserInputHandler {
 } UserInputHandler;
 
 void parse_user_input(UserInputHandler *userInputHandler, int c);
-void parse_can_input(UserInputHandler *self, int inputDigit);
 
 #endif

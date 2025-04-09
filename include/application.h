@@ -1,15 +1,18 @@
 #ifndef APPLICATION_H
 #define APPLICATION_H
 
-#include "TinyTimber.h"
-#include "canTinyTimber.h"
-#include "music_player.h"
-#include "sciTinyTimber.h"
-#include "sioTinyTimber.h"
-#include "tone_generator.h"
-#include "user_interface.h"
 #include <stdio.h>
 #include <stdlib.h>
+
+#include "TinyTimber.h"
+#include "canTinyTimber.h"
+#include "sciTinyTimber.h"
+#include "sioTinyTimber.h"
+
+#include "music_player.h"
+#include "can_interface.h"
+#include "tone_generator.h"
+#include "user_interface.h"
 
 // Distrubance freq 384Hz = 1300
 #define T_1000_Hz 500

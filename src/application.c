@@ -1,39 +1,13 @@
-/*
-part-0 step-2
---------------
-
-Desscription:
---------------
-This application accepts the inputs and caclulates the mean and median of the
-numbers entered according to the criteria mentioned in the Lab manual
-
-Controls:
---------------
-'x' - Input delimiter
-'F' - Clear History
-'+' - Incr Vol
-'-' - Decr Vol
-'d' - Toggle deadlines
-'o' - Incr Background loop range
-'p' - Incr Background loop range
-'1-4' - Change frequencies
-
-*/
-
 #include "application.h"
-#include "TinyTimber.h"
-#include "sioTinyTimber.h"
-#include "user_interface.h"
-#include <stdlib.h>
 
 #define PRESS_MOMENTARY 0
 #define PRESS_AND_HOLD 1
 
-App app = {initObject(), initTimer(), initTimer(), 0, 0, 0, {}, 0, 3};
+App app = {initObject(), initTimer(), initTimer(), 0, 0, 0, {}, -1};
 
+MusicPlayer music_player = {initObject(), DEFAULT_KEY, DEFAULT_TEMPO, 0, 0, 1, 0};
 UserInputHandler userInputHandler = {initObject(), {}, 0};
 Tone_CTRL tone_ctrl = {initObject(), VOLUME, 0, 1, T_1000_Hz, 0, 0, 0};
-MusicPlayer music_player = {initObject(), DEFAULT_KEY, DEFAULT_TEMPO, 0, 0, 1, 0};
 Distortion distortion = {initObject(), 1000, 0};
 Serial sci0 = initSerial(SCI_PORT0, &app, reader);
 Can can0 = initCan(CAN_PORT0, &app, receiver);
@@ -164,7 +138,7 @@ void receiver(App *self, int unused) {
   SCI_WRITE(&sci0, "\n");
 
   for (int i = 0; i < msg.length; i++) {
-    parse_can_input(&msg, &music_player, self->conductor);
+    parse_can_input(&msg, self->conductor);
     // SYNC(&userInputHandler, parse_can_input, msg.buff[i]);
   }
 }

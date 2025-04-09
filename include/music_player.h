@@ -2,7 +2,6 @@
 #define MUSIC_PLAYER_H
 
 #include "application.h"
-#include "utils.h"
 
 #define MIN_FREQ_INDEX -10
 #define MAX_GAP_DURATION 50

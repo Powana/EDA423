@@ -29,7 +29,7 @@ void play_next_note(MusicPlayer *music_player, int index) {
 
   if (index > 31)
     index = 0;
-  music_player->note_idxx = index;
+  music_player->note_idx = index;
   int half_period =
       periods[base_freq_indices[index] - MIN_FREQ_INDEX + music_player->key];
 
@@ -75,7 +75,7 @@ void im_alive_ping(MusicPlayer *music_player, int _) {
   unsigned char note = music_player->note_idx;
   CANMsg msg;
   if (music_player->cur_note_modulo == music_player->nth_note_to_play) {
-    msg = {
+    msg = (CANMsg) {
       .msgId = 8,
       .nodeId = 3,
       .length = 2,
@@ -83,7 +83,7 @@ void im_alive_ping(MusicPlayer *music_player, int _) {
     };
       
   } else {
-    msg = {
+    msg = (CANMsg) {
       .msgId = 8,
       .nodeId = 3,
       .length = 0
