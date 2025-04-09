@@ -5,13 +5,13 @@
 ###
 
 # Project
-PROJECT_NAME = RTS-Lab
+PROJECT_NAME = DRTS-Lab
 PROJECT_DIR  = .
 
 # Paths
 MD407  = /dev/ttyUSB0
-RTSEND = $(PROJECT_DIR)/rtsend
-RTSHOW = $(PROJECT_DIR)/rtshow
+RTSEND = $(PROJECT_DIR)/tools/rtsend
+RTSHOW = $(PROJECT_DIR)/tools/rtshow
 
 # if ARM GNU Toolchain is not on PATH, specify full path including trailing
 # slash, e.g. $(HOME)/Downloads/arm-gnu-toolchain/bin/
@@ -20,8 +20,8 @@ TOOLCHAIN_PATH =
 # Directories
 BUILD_DIR = $(PROJECT_DIR)/build
 OBJ_DIR   = $(BUILD_DIR)/obj
-SRC_DIRS  = $(PROJECT_DIR) $(PROJECT_DIR)/driver/src
-INC_DIRS  = $(PROJECT_DIR)/driver/inc $(PROJECT_DIR)/device/inc
+SRC_DIRS  = $(PROJECT_DIR)/src $(PROJECT_DIR)/lib/driver/src $(PROJECT_DIR)/lib
+INC_DIRS  = $(PROJECT_DIR)/lib/driver/inc $(PROJECT_DIR)/lib/device/inc $(PROJECT_DIR)/include $(PROJECT_DIR)/lib/
 OBJ_DIRS  = $(addprefix $(OBJ_DIR)/, $(SRC_DIRS))
 
 # Source files are automatically detected in directories defined by SRC_DIRS
@@ -34,7 +34,7 @@ TARGET_ELF = $(BUILD_DIR)/$(PROJECT_NAME).elf
 TARGET_S19 = $(BUILD_DIR)/$(PROJECT_NAME).s19
 
 # Target RAM
-LINKER_SCRIPT = $(PROJECT_DIR)/md407-ram.x
+LINKER_SCRIPT = $(PROJECT_DIR)/tools/md407-ram.x
 
 # Compiler
 CC   = $(TOOLCHAIN_PATH)arm-none-eabi-gcc
