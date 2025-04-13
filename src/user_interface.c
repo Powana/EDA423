@@ -5,11 +5,12 @@
 #include "tone_generator.h"
 #include <string.h>
 
+#define USE_CAN_ONLY 1
+
 int num = 0;
 int i;
 
-CANMsg msg = {0, 0, 0};
-
+CANMsg msg = {.msgId = -1, .nodeId = 3, .length=0, .buff={0}}; // TODO Un-hardcode rank 
 extern MusicPlayer music_player;
 extern Tone_CTRL tone_ctrl;
 extern App app;
@@ -19,26 +20,26 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
   case 'o':
     app.mode = !app.mode;
     if (app.mode == 0)
-      print("You are in conductor app.mode", 0);
+      print("You are in conductor mode", 0);
     if (app.mode == 1)
-      print("You are in musician app.mode", 0);
+      print("You are in musician mode", 0);
     break;
-  case 'k':
+    
+  case 'k':  // CHANGE KEY
     self->in_buffer[self->buf_index] = '\0';
     num = atoi(self->in_buffer);
     num = num > 5 ? 5 : (num < -5 ? -5 : num);
-    print("Key: %d\n", num);
+    self->buf_index = 0;
 
     if (app.mode == 0)
       ASYNC(&music_player, change_key, num);
 
     // if(app.mode == 1) Only send CAN msgs in Conductor app.mode
-    msg.length = self->buf_index + 1;
-    for (i = 0; i < self->buf_index; i++)
-      msg.buff[i] = self->in_buffer[i];
-    msg.buff[i] = 'k';
+    msg.msgId = 7;
+    msg.length = 1;
+    msg.buff[0] = num + 5;
+    print("Send Key: %d\n", num+5);
 
-    self->buf_index = 0;
     CAN_SEND(&can0, &msg);
     break;
   case 't':
@@ -46,51 +47,50 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
     num = atoi(self->in_buffer);
     num = num > 300 ? 300 : (num < 30 ? 30 : num);
     print("New Tempo set to: %d\n", num);
-    if (app.mode == 0)
+    if (app.mode == 0 && !USE_CAN_ONLY)
       ASYNC(&music_player, change_tempo, num);
 
     // if(app.mode == 1) Only send CAN msgs in Conductor app.mode
-    msg.length = self->buf_index + 1;
-    for (i = 0; i < self->buf_index; i++)
-      msg.buff[i] = self->in_buffer[i];
-    msg.buff[i] = 't';
+    msg.msgId = 6;
+    msg.length = 2;
+    msg.buff[0] = num & 0x00ff;
+    msg.buff[1] = (num >> 8) & 0xff;
     self->buf_index = 0;
     CAN_SEND(&can0, &msg);
     break;
   case 'm':
-    if (app.mode == 0)
-      ASYNC(&tone_ctrl, toggle_user_mute, 0);
-    msg.length = 1;
-    msg.buff[0] = 'm';
-    CAN_SEND(&can0, &msg);
+    ASYNC(&tone_ctrl, toggle_user_mute, 0);
+    // msg.length = 1;
+    // msg.buff[0] = 'm';
+    // CAN_SEND(&can0, &msg);
     break;
   case 'i':
-    if (app.mode == 0)
-      ASYNC(&tone_ctrl, adjust_volume, 1);
-    msg.length = 1;
-    msg.buff[0] = 'i';
-    CAN_SEND(&can0, &msg);
+    ASYNC(&tone_ctrl, adjust_volume, 1);
+    //msg.length = 1;
+    //msg.buff[0] = 'i';
+    //CAN_SEND(&can0, &msg);
     break;
   case 'd':
-    if (app.mode == 0)
-      ASYNC(&tone_ctrl, adjust_volume, -1);
-    msg.length = 1;
-    msg.buff[0] = 'd';
-    CAN_SEND(&can0, &msg);
+    ASYNC(&tone_ctrl, adjust_volume, -1);
+    // msg.length = 1;
+    // msg.buff[0] = 'd';
+    // CAN_SEND(&can0, &msg);
     break;
   case 'p':
-    if (app.mode == 0)
+    if (app.mode == 0) {
       ASYNC(&music_player, play_music, 0);
-    msg.length = 1;
-    msg.buff[0] = 'p';
-    CAN_SEND(&can0, &msg);
+      msg.msgId = 3;
+      msg.length = 0;
+      CAN_SEND(&can0, &msg);
+    }
     break;
   case 's':
-    if (app.mode == 0)
+    if (app.mode == 0) {
       ASYNC(&music_player, stop_music, 0);
-    msg.length = 1;
-    msg.buff[0] = 's';
-    CAN_SEND(&can0, &msg);
+      msg.length = 0;
+      msg.msgId = 4;
+      CAN_SEND(&can0, &msg);
+    }
     break;
   default:
     self->in_buffer[self->buf_index++] = inputDigit;

@@ -3,7 +3,7 @@
 #define PRESS_MOMENTARY 0
 #define PRESS_AND_HOLD 1
 
-App app = {initObject(), initTimer(), initTimer(), 0, 0, 0, {}, -1};
+App app = {initObject(), initTimer(), initTimer(), 0, 0, 3, {}, 3};
 
 MusicPlayer music_player = {initObject(), DEFAULT_KEY, DEFAULT_TEMPO, 0, 0, 1, 0};
 UserInputHandler userInputHandler = {initObject(), {}, 0};
@@ -133,14 +133,13 @@ void switch_to_held_mode(App *self, int _) {
 void receiver(App *self, int unused) {
   CANMsg msg;
   CAN_RECEIVE(&can0, &msg);
-  SCI_WRITE(&sci0, "Can msg received: ");
-  SCI_WRITE(&sci0, msg.buff);
-  SCI_WRITE(&sci0, "\n");
+  print("Can MSG Recieved, msgId: %d ", msg.msgId);
+  print("NodeID: %d ", msg.nodeId);
+  print("Length: %d ", msg.length);
+  print("buff[0]: %d ", (int) (uchar) msg.buff[0]);
+  print("buff[1]: %d\n", (int) (uchar) msg.buff[1]);
 
-  for (int i = 0; i < msg.length; i++) {
-    parse_can_input(&msg, self->conductor);
-    // SYNC(&userInputHandler, parse_can_input, msg.buff[i]);
-  }
+  parse_can_input(&msg, 3); // TODO: Dont hardcore conductor, but passning self->conductor passed 0
 }
 
 void reader(App *self, int c) {

@@ -19,7 +19,7 @@ void parse_can_input(CANMsg *msg, int conductor) {
         break;
     case 6: // SET TEMPO
         if (msg->nodeId != conductor) return;  // TODO: Check if we need to disregard messages from ourselves
-        num = (int) msg->buff[0] << 8 | msg->buff[1];
+        num = (int) msg->buff[1] << 8 | msg->buff[0];
         num = num > 300 ? 300 : (num < 30 ? 30 : num);
         print("Tempo: %d\n", num);
         ASYNC(&music_player, change_tempo, num);
@@ -29,7 +29,7 @@ void parse_can_input(CANMsg *msg, int conductor) {
         num = (int) msg->buff[0];
         num = num > 10 ? 10 : (num < 0 ? 0 : num);
         num = num - 5;
-        print("Key: %d\n", num);
+        print("Set Key: %d\n", num);
         ASYNC(&music_player, change_key, num);
         break;
     case 8:

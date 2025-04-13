@@ -8,7 +8,7 @@ extern int num;
 
 typedef struct UserInputHandler {
   Object super;
-  char in_buffer[16];
+  char in_buffer[255];
   int buf_index;
 } UserInputHandler;
 
