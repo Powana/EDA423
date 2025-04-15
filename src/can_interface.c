@@ -1,4 +1,5 @@
 #include "can_interface.h"
+#include "canTinyTimber.h"
 
 extern MusicPlayer music_player;
 void parse_can_input(CANMsg *msg, int conductor) {
@@ -34,8 +35,14 @@ void parse_can_input(CANMsg *msg, int conductor) {
         print("Set Key: %d\n", num);
         ASYNC(&music_player, change_key, num);
         break;
-    case 8:
-    case 9:
+    case 8: // im alive
+        if (network_size == 1) {
+            CANMsg msg = {9,3,0,{}};
+            CAN_SEND(&can0, &msg);
+            network_size += 1;
+            // TODO add to known nodes
+        }
+    case 9: // im new
         break;
     default:
         break;
