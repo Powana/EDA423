@@ -52,7 +52,10 @@ void play_next_note(MusicPlayer *music_player, int index) {
 
   // UNMUTE
   if (music_player->cur_note_modulo == music_player->nth_note_to_play) {
-    SEND(0, MSEC(0.1), &tone_ctrl, unmute_tone, 0);
+    SEND(0, 0, &tone_ctrl, unmute_tone, 0);
+    SEND(0,0, music_player, im_alive_ping, 8*note_length);
+  } else {
+    SEND(0,0, music_player, im_alive_ping, -8*note_length);
   }
 
   // MUTE
@@ -62,37 +65,40 @@ void play_next_note(MusicPlayer *music_player, int index) {
 
   // RECURSIVE CALL
   SEND(MSEC(note_duration_ms), 0, music_player, play_next_note, index + 1);
-
   music_player->cur_note_modulo = (music_player->cur_note_modulo + 1) % network_size;
   music_player->current_note_segment = 0;
 }
 
+void update_note(MusicPlayer *music_player, int _) {
+  music_player->cur_note_modulo = (music_player->cur_note_modulo + 1) % network_size;
+  music_player->current_note_segment = 0;
+}
 void change_key(MusicPlayer *music_player, int key) { music_player->key = key; }
 
 void change_tempo(MusicPlayer *music_player, int tempo) { music_player->tempo = tempo; }
 
-void im_alive_ping(MusicPlayer *music_player, int _) {
-  unsigned char note = music_player->note_idx;
-  CANMsg msg;
-  if (music_player->cur_note_modulo == music_player->nth_note_to_play) {
-    msg = (CANMsg) {
-      .msgId = 8,
-      .nodeId = 3,
-      .length = 2,
-      .buff = {note, music_player->current_note_segment}
-    };
-      
-  } else {
-    msg = (CANMsg) {
-      .msgId = 8,
-      .nodeId = 3,
-      .length = 0
-    };
+void im_alive_ping(MusicPlayer *music_player, int count) {
+  if (!music_player->is_playing || count == 0) {
+    return;
   }
+  unsigned char note = music_player->note_idx;
+  CANMsg msg = {8, 3, 0, {0,0,0,0}};
+  int new_count = count;
+  if (count > 0) {
+    
+    msg.length = 2;
+    msg.buff[0] = note;
+    msg.buff[1] = music_player->current_note_segment; 
+    new_count--;
+  } else {
+    new_count++;
+  }
+  
   music_player->current_note_segment++;
   
-  CAN_SEND(&can0, &msg);
-  SEND(MSEC(600000.0 / music_player->tempo / 8), 0, music_player, im_alive_ping, 0);
+  CAN_SEND(&can0, &msg); 
+  
+  SEND(SEC(60.0 / music_player->tempo)/ 8, 0, music_player, im_alive_ping, new_count);
 }
 
 

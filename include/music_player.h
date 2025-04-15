@@ -26,5 +26,7 @@ void change_key(MusicPlayer *music_player, int key);
 void change_tempo(MusicPlayer *music_player, int tempo);
 void turn_led_off(MusicPlayer *self, int _);
 void blink_led(MusicPlayer *self, int _);
+void im_alive_ping(MusicPlayer *self, int _);
+void update_note(MusicPlayer *music_player, int _);
 
 #endif

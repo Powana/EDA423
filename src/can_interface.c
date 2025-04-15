@@ -12,6 +12,8 @@ void parse_can_input(CANMsg *msg, int conductor) {
     case 3: // START
         if (msg->nodeId != conductor) return;
         ASYNC(&music_player, play_music, 0);
+        ASYNC(&music_player, im_alive_ping, 0);
+
         break;
     case 4: // STOP
         if (msg->nodeId != conductor) return;
