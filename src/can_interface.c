@@ -13,8 +13,7 @@ void parse_can_input(CANMsg *msg, int conductor) {
     case 3: // START
         if (msg->nodeId != conductor) return;
         ASYNC(&music_player, play_music, 0);
-        ASYNC(&music_player, im_alive_ping, 0);
-
+        // ASYNC(&music_player, im_alive_ping, 0);  // TODO, Remove this if using the count implementation
         break;
     case 4: // STOP
         if (msg->nodeId != conductor) return;
@@ -27,7 +26,7 @@ void parse_can_input(CANMsg *msg, int conductor) {
         print("Tempo: %d\n", num);
         ASYNC(&music_player, change_tempo, num);
         break;
-    case 7:
+    case 7:  // SET KEY
         if (msg->nodeId != conductor) return;
         num = (int) msg->buff[0];
         num = num > 10 ? 10 : (num < 0 ? 0 : num);

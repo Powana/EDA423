@@ -22,6 +22,7 @@ typedef struct {
 void play_music(MusicPlayer *music_player, int _);
 void stop_music(MusicPlayer *music_player, int _);
 void play_next_note(MusicPlayer *music_player, int index);
+void check_segment(MusicPlayer *MusicPlayer, int send_data);
 void change_key(MusicPlayer *music_player, int key);
 void change_tempo(MusicPlayer *music_player, int tempo);
 void turn_led_off(MusicPlayer *self, int _);

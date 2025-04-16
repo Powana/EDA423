@@ -44,18 +44,19 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
     break;
   case 't':
     self->in_buffer[self->buf_index] = '\0';
+    self->buf_index = 0;
+    if (app.mode == 1) return;
+
     num = atoi(self->in_buffer);
     num = num > 300 ? 300 : (num < 30 ? 30 : num);
     print("New Tempo set to: %d\n", num);
-    if (app.mode == 0 && !USE_CAN_ONLY)
+    if (!USE_CAN_ONLY)
       ASYNC(&music_player, change_tempo, num);
 
-    // if(app.mode == 1) Only send CAN msgs in Conductor app.mode
     msg.msgId = 6;
     msg.length = 2;
     msg.buff[0] = num & 0x00ff;
     msg.buff[1] = (num >> 8) & 0xff;
-    self->buf_index = 0;
     CAN_SEND(&can0, &msg);
     break;
   case 'm':
@@ -77,12 +78,12 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
     // CAN_SEND(&can0, &msg);
     break;
   case 'p':
-    if (app.mode == 0) {
-      ASYNC(&music_player, play_music, 0);
-      msg.msgId = 3;
-      msg.length = 0;
-      CAN_SEND(&can0, &msg);
-    }
+    if (app.mode == 1) return;
+    if (!USE_CAN_ONLY) ASYNC(&music_player, play_music, 0);
+    
+    msg.msgId = 3;
+    msg.length = 0;
+    CAN_SEND(&can0, &msg);
     break;
   case 's':
     if (app.mode == 0) {
