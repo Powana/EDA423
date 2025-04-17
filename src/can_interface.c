@@ -1,5 +1,6 @@
 #include "can_interface.h"
 #include "canTinyTimber.h"
+#include "application.h"
 
 extern MusicPlayer music_player;
 void parse_can_input(CANMsg *msg, int conductor) {
@@ -7,7 +8,20 @@ void parse_can_input(CANMsg *msg, int conductor) {
     switch (msg->msgId) {
     case 0:
     case 1:
-    case 2:
+    case 2: // Start Conducting
+        if (evaling_conductor) {
+            print("conductor conflict\n", 0);
+            if (msg->nodeId < pending_conductor) {
+                pending_conductor = msg->nodeId;
+            }
+            break;
+        }
+        if (!evaling_conductor) {
+            print("starting evaling conductor\n", 0);
+            evaling_conductor = 1;
+            pending_conductor = msg->nodeId;
+            AFTER(MSEC(200), &app, switch_conductor, 0);
+        }
         break;
     
     case 3: // START

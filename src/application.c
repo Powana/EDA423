@@ -12,7 +12,8 @@ Distortion distortion = {initObject(), 1000, 0};
 Serial sci0 = initSerial(SCI_PORT0, &app, reader);
 Can can0 = initCan(CAN_PORT0, &app, receiver);
 SysIO sio0 = initSysIO(SIO_PORT0, &app, sio_receive);
-
+int pending_conductor = 0;
+int evaling_conductor = 0;
 int network_size = 2;
 int base_freq_indices[32] = {0, 2, 4, 0, 0, 2, 4, 0, 4, 5, 7, 4,  5, 7, 7,  9,
                              7, 5, 4, 0, 7, 9, 7, 5, 4, 0, 0, -5, 0, 0, -5, 0};
@@ -128,6 +129,13 @@ void button_press_logic(App *self, int _) {
 void switch_to_held_mode(App *self, int _) {
   print("switched to held mode\n", 0);
   self->user_button_mode = PRESS_AND_HOLD;
+}
+
+void switch_conductor(App* self, int _) {
+  print("switched conductor to %d\n", pending_conductor);
+  self->conductor = pending_conductor;
+  evaling_conductor = 0;
+  
 }
 
 void receiver(App *self, int unused) {

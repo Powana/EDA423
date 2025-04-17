@@ -47,6 +47,8 @@ extern int min_index;
 extern int max_index;
 extern int mode;
 extern int network_size;
+extern int pending_conductor;
+extern int evaling_conductor;
 
 void reader(App *, int);
 void receiver(App *, int);
@@ -54,6 +56,7 @@ void sio_receive(App *self, int val);
 void switch_to_held_mode(App *self, int _);
 void button_press_logic(App *self, int _);
 void button_release_logic(App *self, int _);
+void switch_conductor(App *self, int _);
 
 extern Serial sci0;
 
