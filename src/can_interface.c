@@ -7,13 +7,25 @@ void parse_can_input(App *self, int _) {
     CANMsg msg;
     CANMsg respMsg;
     CAN_RECEIVE(&can0, &msg);
-    if (msg.msgId == 8) return;
-    print("Can MSG Recieved, msgId: %d ", msg.msgId);
-    print("NodeID: %d ", msg.nodeId);
-    print("Length: %d ", msg.length);
-    print("buff[0]: %d ", (int) (uchar) msg.buff[0]);
-    print("buff[1]: %d\n", (int) (uchar) msg.buff[1]);
-  
+    
+    int new_nodeID = 0;
+    for (int i=0; i<MAX_NETWORK_SIZE; i++) {
+        if (self->ranks[i] == msg.nodeId) new_nodeID = 0;
+    }
+    if (new_nodeID) {
+        self->ranks[self->network_size-1] = msg.nodeId;
+        self->network_size++;
+        SYNC(&music_player, update_nth_note_to_play, 0);
+    }
+    
+    if (msg.msgId != 7) {
+        print("Can MSG Recieved, msgId: %d ", msg.msgId);
+        print("NodeID: %d ", msg.nodeId);
+        print("Length: %d ", msg.length);
+        print("buff[0]: %d ", (int) (uchar) msg.buff[0]);
+        print("buff[1]: %d\n", (int) (uchar) msg.buff[1]);
+    }
+
     int num; 
     switch (msg.msgId) {
     case 0:
@@ -25,10 +37,7 @@ void parse_can_input(App *self, int _) {
         
     case 1:
         if (msg.nodeId == app.rank) return;
-        for (int i=0; i<MAX_NETWORK_SIZE; i++) {
-            if (self->ranks[i] == msg.nodeId) return;
-        }
-        self->network_size++;
+        break;
 
         break;
     case 2: // Start Conducting
@@ -81,18 +90,6 @@ void parse_can_input(App *self, int _) {
         }
     case 8: // im new
         if(self->rank == msg.nodeId) return;
-        int new = 1;
-        for(int i = 0; i < self->network_size-1; i++) {
-            if(self->ranks[i] == msg.nodeId){
-                new = 0;
-            }
-        }
-        if(new) {
-            self->network_size++;
-            self->ranks[self->network_size] = msg.nodeId;
-            SYNC(&music_player, update_nth_note_to_play, 0);
-        }
-            
         break;
     default:
         break;

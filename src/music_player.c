@@ -62,8 +62,6 @@ void play_next_note(MusicPlayer *music_player, int index) {
 
 void check_segment(MusicPlayer *music_player, int _) {
   if (!music_player->is_playing) return;
-  print("Check segment. cur_note_modulo: %d, nth_note_to_play: ", music_player->cur_note_modulo);
-  print("%d\n", music_player->nth_note_to_play);
   int segment_duration_ms = (60000.0 / music_player->tempo) / 8;  // TODO Maybe move caclulation outside of function
   if (music_player->cur_note_modulo != music_player->nth_note_to_play && ((&tone_ctrl)->mute == 0)) {// New board joined that has respnsibility for this note, TODO:  && )Add support for the silence at end of tones
     SEND(MSEC(segment_duration_ms), MSEC(segment_duration_ms/8), &tone_ctrl, mute_tone, 0);
@@ -92,7 +90,7 @@ void im_alive_ping(MusicPlayer *music_player, int send_data) {
   if (!music_player->is_playing) {
     return;
   }
-  CANMsg msg = {8, 3, 0, {0,0}};
+  CANMsg msg = {7, 3, 0, {0,0}};
   if (send_data) {
     msg.length = 2;
     msg.buff[0] = music_player->note_idx;
@@ -126,7 +124,10 @@ void turn_led_off(MusicPlayer *self, int _) {
 void update_nth_note_to_play(MusicPlayer *self, int _) {
   int less_than = 0;
   for(int i = 0; i < app.network_size-1; i++) {
-      if (app.ranks[i] < NODE_ID) less_than++;
+    if (app.ranks[i] < NODE_ID) less_than++;
   }
   self->nth_note_to_play = less_than;
+  print("update_nth_note_to_play. cur_note_modulo: %d, nth_note_to_play: ", self->cur_note_modulo);
+  print("%d\n", self->nth_note_to_play);
+
 }
