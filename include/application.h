@@ -22,7 +22,7 @@
 #define DEFAULT_TEMPO 120
 #define DEFAULT_KEY 0
 #define NODE_ID 3
-#define MAX_NETWORK_SIZE 2
+#define MAX_NETWORK_SIZE 3
 
 typedef struct {
   Object super;
