@@ -19,10 +19,11 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
   switch ((char)inputDigit) {
   case 'o':
     app.mode = !app.mode;
-    if (app.mode == 0)
+    if (app.mode == 0) {
       print("You are in conductor mode", 0);
       msg.msgId = 2;
       CAN_SEND(&can0, &msg);
+    }
     if (app.mode == 1)
       print("You are in musician mode", 0);
     break;

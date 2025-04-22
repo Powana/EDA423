@@ -32,7 +32,7 @@ void play_next_note(MusicPlayer *music_player, int index) {
     index = 0;
   music_player->note_idx = index;
   music_player->current_note_segment = 0;
-  music_player->cur_note_modulo = (music_player->cur_note_modulo + 1) % network_size;
+  music_player->cur_note_modulo = (music_player->cur_note_modulo + 1) % app.network_size;
 
   int half_period =
       periods[base_freq_indices[index] - MIN_FREQ_INDEX + music_player->key];
@@ -79,7 +79,7 @@ void check_segment(MusicPlayer *music_player, int _) {
 }
 
 void update_note(MusicPlayer *music_player, int _) {
-  music_player->cur_note_modulo = (music_player->cur_note_modulo + 1) % network_size;
+  music_player->cur_note_modulo = (music_player->cur_note_modulo + 1) % app.network_size;
   music_player->current_note_segment = 0;
 }
 void change_key(MusicPlayer *music_player, int key) { music_player->key = key; }

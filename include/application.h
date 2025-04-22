@@ -10,7 +10,6 @@
 #include "sioTinyTimber.h"
 
 #include "music_player.h"
-#include "can_interface.h"
 #include "tone_generator.h"
 #include "user_interface.h"
 
@@ -22,6 +21,8 @@
 #define VOLUME 3
 #define DEFAULT_TEMPO 120
 #define DEFAULT_KEY 0
+#define NODE_ID 3
+#define MAX_NETWORK_SIZE 2
 
 typedef struct {
   Object super;
@@ -34,11 +35,15 @@ typedef struct {
   int tap_count;
   int bounce_flag;
   int rank;
-  int ranks[2];
+  int ranks[MAX_NETWORK_SIZE];
+  int network_size;
   int conductor;
+  int evaling_conductor;
 } App;
 
 extern App app;
+
+#include "can_interface.h"
 
 extern int base_freq_indices[32];
 extern int periods[25];
@@ -46,9 +51,7 @@ extern char note_lengths[32];
 extern int min_index;
 extern int max_index;
 extern int mode;
-extern int network_size;
 extern int pending_conductor;
-extern int evaling_conductor;
 
 void reader(App *, int);
 void receiver(App *, int);

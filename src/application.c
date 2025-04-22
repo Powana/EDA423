@@ -3,17 +3,16 @@
 #define PRESS_MOMENTARY 0
 #define PRESS_AND_HOLD 1
 
-App app = {initObject(), initTimer(), initTimer(), 0, 0, 1, {}, 1};
+App app = {initObject(), initTimer(), initTimer(), 0, 0, 1, {}, 1, .evaling_conductor=0};
 
 MusicPlayer music_player = {initObject(), DEFAULT_KEY, DEFAULT_TEMPO, 0, 0, 1, 0};
 UserInputHandler userInputHandler = {initObject(), {}, 0};
 Tone_CTRL tone_ctrl = {initObject(), VOLUME, 0, 1, T_1000_Hz, 0, 0, 0};
 Distortion distortion = {initObject(), 1000, 0};
 Serial sci0 = initSerial(SCI_PORT0, &app, reader);
-Can can0 = initCan(CAN_PORT0, &app, receiver);
+Can can0 = initCan(CAN_PORT0, &app, parse_can_input);
 SysIO sio0 = initSysIO(SIO_PORT0, &app, sio_receive);
 int pending_conductor = 0;
-int evaling_conductor = 0;
 int network_size = 2;
 int base_freq_indices[32] = {0, 2, 4, 0, 0, 2, 4, 0, 4, 5, 7, 4,  5, 7, 7,  9,
                              7, 5, 4, 0, 7, 9, 7, 5, 4, 0, 0, -5, 0, 0, -5, 0};
@@ -134,21 +133,8 @@ void switch_to_held_mode(App *self, int _) {
 void switch_conductor(App* self, int _) {
   print("switched conductor to %d\n", pending_conductor);
   self->conductor = pending_conductor;
-  evaling_conductor = 0;
+  self->evaling_conductor = 0;
   
-}
-
-void receiver(App *self, int unused) {
-  CANMsg msg;
-  CAN_RECEIVE(&can0, &msg);
-  if (msg.msgId == 8) return;
-  print("Can MSG Recieved, msgId: %d ", msg.msgId);
-  print("NodeID: %d ", msg.nodeId);
-  print("Length: %d ", msg.length);
-  print("buff[0]: %d ", (int) (uchar) msg.buff[0]);
-  print("buff[1]: %d\n", (int) (uchar) msg.buff[1]);
-
-  parse_can_input(&msg, 3); // TODO: Dont hardcore conductor, but passning self->conductor passed 0
 }
 
 void reader(App *self, int c) {
