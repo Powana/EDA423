@@ -87,6 +87,8 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
     msg.msgId = 3;
     msg.length = 0;
     CAN_SEND(&can0, &msg);
+    CANMsg reqMsg = {0, app.rank, 0, {}};
+    CAN_SEND(&can0, &reqMsg);
     break;
   case 's':
     if (app.conductor != app.rank) return;
