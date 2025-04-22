@@ -3,7 +3,7 @@
 #define PRESS_MOMENTARY 0
 #define PRESS_AND_HOLD 1
 
-App app = {initObject(), initTimer(), initTimer(), .user_button_mode=0, .trigger_mode=0, .inter_arrival_times={}, .tap_count=0, .bounce_flag=0, .rank=NODE_ID, .ranks={}, .network_size=0, .conductor=3, .evaling_conductor=0};
+App app = {initObject(), initTimer(), initTimer(), .user_button_mode=0, .trigger_mode=0, .inter_arrival_times={}, .tap_count=0, .bounce_flag=0, .rank=NODE_ID, .ranks={}, .network_size=1, .conductor=3, .evaling_conductor=0};
 
 MusicPlayer music_player = {initObject(), DEFAULT_KEY, DEFAULT_TEMPO, 0, 0, 1, 0};
 UserInputHandler userInputHandler = {initObject(), {}, 0};

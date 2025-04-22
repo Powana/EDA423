@@ -83,12 +83,14 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
   case 'p':
     if (app.conductor != app.rank) return;
     if (!USE_CAN_ONLY) ASYNC(&music_player, play_music, 0);
-    
+    print("Inside of P case, app.rank:%d!!!!", app.rank);
     msg.msgId = 3;
     msg.length = 0;
     CAN_SEND(&can0, &msg);
-    CANMsg reqMsg = {0, app.rank, 0, {}};
-    CAN_SEND(&can0, &reqMsg);
+
+    msg.msgId = 0;
+    msg.length = 0;
+    CAN_SEND(&can0, &msg);
     break;
   case 's':
     if (app.conductor != app.rank) return;
