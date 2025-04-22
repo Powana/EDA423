@@ -25,6 +25,7 @@ void parse_can_input(App *self, int _) {
         break;
         
     case 1:
+        if (msg.nodeId == app.rank) return;
         for (int i=0; i<MAX_NETWORK_SIZE; i++) {
             if (self->ranks[i] == msg.nodeId) return;
         }
@@ -80,6 +81,7 @@ void parse_can_input(App *self, int _) {
             // TODO add to known nodes
         }
     case 9: // im new
+        ;
         int new = 1;
         for(int i = 0; i < self->network_size; i++) {
             if(self->ranks[i] == msg.buff[0]){
