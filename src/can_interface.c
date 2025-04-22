@@ -20,7 +20,6 @@ void parse_can_input(App *self, int _) {
         respMsg.msgId = 1;
         respMsg.nodeId = self->rank;
         respMsg.length = 0;
-        //= (CANMsg) {1,self->rank,0,{}};
         CAN_SEND(&can0, &respMsg);
         break;
         
@@ -81,10 +80,10 @@ void parse_can_input(App *self, int _) {
             // TODO add to known nodes
         }
     case 9: // im new
-        ;
+        if(self->rank == msg.nodeId) return;
         int new = 1;
         for(int i = 0; i < self->network_size; i++) {
-            if(self->ranks[i] == msg.buff[0]){
+            if(self->ranks[i] == msg.nodeId){
                 new = 0;
             }
         }
