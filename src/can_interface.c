@@ -15,6 +15,7 @@ void parse_can_input(App *self, int _) {
     if (new_nodeID && msg.nodeId != self->rank) {
         self->ranks[self->network_size-1] = msg.nodeId;
         self->network_size++;
+        if (msg.nodeId < NODE_ID) music_player.cur_note_modulo++; // TODO decrease on node leave
         SYNC(&music_player, update_nth_note_to_play, 0);
     }
     

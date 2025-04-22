@@ -79,7 +79,8 @@ void check_segment(MusicPlayer *music_player, int _) {
   print("cur_note_modulor: %d ", music_player->cur_note_modulo);
   print("nth_note_to_play: %d ", music_player->nth_note_to_play);
   print("current_note_segment %d ", music_player->current_note_segment);
-  print("tone_ctrl->mute: %d \n", (&tone_ctrl)->mute);
+  print("tone_ctrl->mute: %d ", (&tone_ctrl)->mute);
+  print("app.network_size: %d \n", app.network_size);
   if(music_player->current_note_segment == 0) {
     music_player->cur_note_modulo = (music_player->cur_note_modulo + 1) % app.network_size;
   }
