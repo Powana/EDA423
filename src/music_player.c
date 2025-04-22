@@ -11,8 +11,8 @@ void play_music(MusicPlayer *music_player, int _) {
   music_player->is_playing = 1;
 
   ASYNC(&tone_ctrl, play_tone, 0);
-  ASYNC(music_player, play_next_note, 0);
-  SEND(0, MSEC(1), music_player, check_segment, 0);  // TODO: Set proper deadline > 0
+  SEND(0, MSEC(1), music_player, play_next_note, 0);
+  SEND(0, MSEC(2), music_player, check_segment, 0);  // TODO: Set proper deadline > 0
 
   blink_led(music_player, 0);
 }
@@ -30,6 +30,8 @@ void play_next_note(MusicPlayer *music_player, int index) {
 
   if (index > 31)
     index = 0;
+
+  print("=== Play Note %d ===\n", index);
   music_player->note_idx = index;
   music_player->current_note_segment = 0;
   music_player->cur_note_modulo = (music_player->cur_note_modulo + 1) % app.network_size;
@@ -71,6 +73,11 @@ void funmute(MusicPlayer *music_player, int _) {
 void check_segment(MusicPlayer *music_player, int _) {
   if (!music_player->is_playing) return;
   int segment_duration_ms = (60000.0 / music_player->tempo) / 8;  // TODO Maybe move caclulation outside of function
+  print("Segment_duration: %d ", segment_duration_ms);
+  print("cur_note_modulor: %d ", music_player->cur_note_modulo);
+  print("nth_note_to_play: %d ", music_player->nth_note_to_play);
+  print("current_note_segment %d ", music_player->current_note_segment);
+  print("tone_ctrl->mute: %d \n", (&tone_ctrl)->mute);
   if (music_player->cur_note_modulo != music_player->nth_note_to_play && ((&tone_ctrl)->mute == 0)) {// New board joined that has respnsibility for this note, TODO:  && )Add support for the silence at end of tones
     SEND(MSEC(segment_duration_ms), MSEC(segment_duration_ms/8), &tone_ctrl, mute_tone, 0);
     print("Segment: Muted tone\n", 0);
