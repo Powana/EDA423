@@ -75,6 +75,16 @@ void parse_can_input(App *self, int _) {
             // TODO add to known nodes
         }
     case 9: // im new
+        int new = 1;
+        for(int i = 0; i < (self->network_size - 1)/sizeof(int); i++) {
+            if(self->ranks[i] == msg.buff[0]){
+                new = 0;
+            }
+        }
+        if(new) {
+            self->ranks[self->network_size] = msg.buff[0];
+            self->network_size++;
+        }
         break;
     default:
         break;
