@@ -17,7 +17,7 @@ void parse_can_input(App *self, int _) {
     switch (msg.msgId) {
     case 0:
         ;
-        CANMsg respMsg = {1,NODE_ID,0,{}};
+        CANMsg respMsg = {1,self->rank,0,{}};
         CAN_SEND(&can0, &respMsg);
         break;
     case 1:
@@ -69,7 +69,7 @@ void parse_can_input(App *self, int _) {
         break;
     case 8: // im alive
         if (self->network_size == 1) {
-            CANMsg msg = {9,NODE_ID,0,{}};
+            CANMsg msg = {9,self->rank,0,{}};
             CAN_SEND(&can0, &msg);
             self->network_size += 1;
             // TODO add to known nodes
