@@ -78,10 +78,6 @@ void check_segment(MusicPlayer *music_player, int _) {
   SEND(MSEC(segment_duration_ms), MSEC(segment_duration_ms/8), music_player, check_segment, 0);
 }
 
-void update_note(MusicPlayer *music_player, int _) {
-  music_player->cur_note_modulo = (music_player->cur_note_modulo + 1) % app.network_size;
-  music_player->current_note_segment = 0;
-}
 void change_key(MusicPlayer *music_player, int key) { music_player->key = key; }
 
 void change_tempo(MusicPlayer *music_player, int tempo) { music_player->tempo = tempo; }
@@ -128,6 +124,7 @@ void update_nth_note_to_play(MusicPlayer *self, int _) {
   }
   self->nth_note_to_play = less_than;
   print("update_nth_note_to_play. cur_note_modulo: %d, nth_note_to_play: ", self->cur_note_modulo);
-  print("%d\n", self->nth_note_to_play);
+  print("%d ", self->nth_note_to_play);
+  print("app.network_size%d\n", app.network_size);
 
 }
