@@ -82,19 +82,15 @@ void parse_can_input(App *self, int _) {
     case 8: // im new
         if(self->rank == msg.nodeId) return;
         int new = 1;
-        for(int i = 0; i < self->network_size; i++) {
+        for(int i = 0; i < self->network_size-1; i++) {
             if(self->ranks[i] == msg.nodeId){
                 new = 0;
             }
         }
         if(new) {
-            self->ranks[self->network_size] = msg.buff[0];
             self->network_size++;
-            int less_than = 0;
-            for(int i = 0; i < self->network_size; i++) {
-                if (self->ranks[i] < NODE_ID) less_than++;
-            }
-            music_player.nth_note_to_play = less_than;
+            self->ranks[self->network_size] = msg.nodeId;
+            SYNC(&music_player, update_nth_note_to_play, 0);
         }
             
         break;
