@@ -5,7 +5,7 @@
 #include "tone_generator.h"
 #include <string.h>
 
-#define USE_CAN_ONLY 1
+#define USE_CAN_ONLY 0
 
 int num = 0;
 int i;

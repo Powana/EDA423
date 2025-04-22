@@ -90,6 +90,11 @@ void parse_can_input(App *self, int _) {
         if(new) {
             self->ranks[self->network_size] = msg.buff[0];
             self->network_size++;
+            int less_than = 0;
+            for(int i = 0; i < self->network_size; i++) {
+                if (self->ranks[i] < NODE_ID) less_than++;
+            }
+            music_player.nth_note_to_play = less_than;
         }
             
         break;
