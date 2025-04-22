@@ -10,7 +10,7 @@
 int num = 0;
 int i;
 
-CANMsg msg = {.msgId = -1, .nodeId = 3, .length=0, .buff={0}}; // TODO Un-hardcode rank 
+CANMsg msg = {.msgId = -1, .nodeId = NODE_ID, .length=0, .buff={0}}; // TODO Un-hardcode rank 
 extern MusicPlayer music_player;
 extern Tone_CTRL tone_ctrl;
 extern App app;
@@ -19,7 +19,12 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
   switch ((char)inputDigit) {
   case 'o':
     if (app.conductor != app.rank) {
-      print("Requesting conductor mode", 0);
+      print("Requesting conductor mode\n", 0);
+      if (!(app.evaling_conductor)) {
+        AFTER(MSEC(200), &app, switch_conductor, 0);
+      }
+      pending_conductor = NODE_ID;
+      app.evaling_conductor = 1;
       msg.msgId = 2;
       CAN_SEND(&can0, &msg);
     }
