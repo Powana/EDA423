@@ -28,7 +28,6 @@ typedef struct {
   Object super;
   Timer arrival_timer;
   Timer hold_timer;
-  int mode;
   int user_button_mode;
   int trigger_mode;
   int inter_arrival_times[3];

@@ -18,37 +18,37 @@ extern App app;
 void parse_user_input(UserInputHandler *self, int inputDigit) {
   switch ((char)inputDigit) {
   case 'o':
-    app.mode = !app.mode;
-    if (app.mode == 0) {
-      print("You are in conductor mode", 0);
+    if (app.conductor != app.rank) {
+      print("Requesting conductor mode", 0);
       msg.msgId = 2;
       CAN_SEND(&can0, &msg);
     }
-    if (app.mode == 1)
+    /* TODO: Discuss what happens when the conductor node tries to swap to musician, does another node have to take over?
+    if (app.conductor == app.rank)
       print("You are in musician mode", 0);
     break;
-    
+    */
   case 'k':  // CHANGE KEY
     self->in_buffer[self->buf_index] = '\0';
     num = atoi(self->in_buffer);
     num = num > 5 ? 5 : (num < -5 ? -5 : num);
     self->buf_index = 0;
 
-    if (app.mode == 0)
+    if (app.conductor == app.rank && !USE_CAN_ONLY)
       ASYNC(&music_player, change_key, num);
 
-    // if(app.mode == 1) Only send CAN msgs in Conductor app.mode
-    msg.msgId = 7;
-    msg.length = 1;
-    msg.buff[0] = num + 5;
-    print("Send Key: %d\n", num+5);
-
-    CAN_SEND(&can0, &msg);
+    if(app.rank == app.conductor) { // Only send CAN msgs when conductor
+      msg.msgId = 7;
+      msg.length = 1;
+      msg.buff[0] = num + 5;
+      print("Send Key: %d\n", num+5);
+      CAN_SEND(&can0, &msg);
+    }
     break;
   case 't':
     self->in_buffer[self->buf_index] = '\0';
     self->buf_index = 0;
-    if (app.mode == 1) return;
+    if (app.conductor != app.rank) return;
 
     num = atoi(self->in_buffer);
     num = num > 300 ? 300 : (num < 30 ? 30 : num);
@@ -81,7 +81,7 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
     // CAN_SEND(&can0, &msg);
     break;
   case 'p':
-    if (app.mode == 1) return;
+    if (app.conductor != app.rank) return;
     if (!USE_CAN_ONLY) ASYNC(&music_player, play_music, 0);
     
     msg.msgId = 3;
@@ -89,12 +89,12 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
     CAN_SEND(&can0, &msg);
     break;
   case 's':
-    if (app.mode == 0) {
-      ASYNC(&music_player, stop_music, 0);
-      msg.length = 0;
-      msg.msgId = 4;
-      CAN_SEND(&can0, &msg);
-    }
+    if (app.conductor != app.rank) return;
+    if (!USE_CAN_ONLY) ASYNC(&music_player, stop_music, 0);
+  
+    msg.length = 0;
+    msg.msgId = 4;
+    CAN_SEND(&can0, &msg);
     break;
   default:
     self->in_buffer[self->buf_index++] = inputDigit;
