@@ -12,6 +12,7 @@ void play_music(MusicPlayer *music_player, int _) {
 
   ASYNC(&tone_ctrl, play_tone, 0);
   ASYNC(music_player, play_next_note, 0);
+  SEND(0, MSEC(1), music_player, check_segment, 0);  // TODO: Set proper deadline > 0
 
   blink_led(music_player, 0);
 }
@@ -30,6 +31,9 @@ void play_next_note(MusicPlayer *music_player, int index) {
   if (index > 31)
     index = 0;
   music_player->note_idx = index;
+  music_player->current_note_segment = 0;
+  music_player->cur_note_modulo = (music_player->cur_note_modulo + 1) % network_size;
+
   int half_period =
       periods[base_freq_indices[index] - MIN_FREQ_INDEX + music_player->key];
 
@@ -48,25 +52,30 @@ void play_next_note(MusicPlayer *music_player, int index) {
 
   int note_duration_ms = (60000.0 / music_player->tempo) * note_length;
   SYNC(&tone_ctrl, set_period, half_period);
-  
 
-  // UNMUTE
-  if (music_player->cur_note_modulo == music_player->nth_note_to_play) {
-    SEND(0, 0, &tone_ctrl, unmute_tone, 0);
-    SEND(0,0, music_player, im_alive_ping, 8*note_length);
-  } else {
-    SEND(0,0, music_player, im_alive_ping, -8*note_length);
-  }
-
-  // MUTE
-  SEND(MSEC(note_duration_ms - 75),
-    MSEC(note_duration_ms - 75), &tone_ctrl, mute_tone, 0);
-
+  // MUTE at end of note
+  SEND(MSEC(note_duration_ms - 75), MSEC(25), &tone_ctrl, mute_tone, 0);
 
   // RECURSIVE CALL
   SEND(MSEC(note_duration_ms), 0, music_player, play_next_note, index + 1);
-  music_player->cur_note_modulo = (music_player->cur_note_modulo + 1) % network_size;
-  music_player->current_note_segment = 0;
+}
+
+void check_segment(MusicPlayer *music_player, int _) {
+  if (!music_player->is_playing) return;
+  int segment_duration_ms = (60000.0 / music_player->tempo) / 8;  // TODO Maybe move caclulation outside of function
+  if (music_player->cur_note_modulo != music_player->nth_note_to_play && ((&tone_ctrl)->mute == 0)) {// New board joined that has respnsibility for this note, TODO:  && )Add support for the silence at end of tones
+    SEND(MSEC(segment_duration_ms), MSEC(segment_duration_ms/8), &tone_ctrl, mute_tone, 0);
+    print("Segment: Muted tone\n", 0);
+  }
+  else if(music_player->cur_note_modulo == music_player->nth_note_to_play && ((&tone_ctrl)->mute == 1)) {  // We are playing our assigned note, or we have just jumped in and should start playing next segment
+    SEND(MSEC(segment_duration_ms), MSEC(segment_duration_ms/8), &tone_ctrl, unmute_tone, 0);
+    print("Segment: Unmuted tone\n", 0);
+  }
+  
+  music_player->current_note_segment++;
+
+  SEND(0, MSEC(segment_duration_ms/8), music_player, im_alive_ping, music_player->cur_note_modulo == music_player->nth_note_to_play);
+  SEND(MSEC(segment_duration_ms), MSEC(segment_duration_ms/8), music_player, check_segment, 0);
 }
 
 void update_note(MusicPlayer *music_player, int _) {
@@ -77,28 +86,18 @@ void change_key(MusicPlayer *music_player, int key) { music_player->key = key; }
 
 void change_tempo(MusicPlayer *music_player, int tempo) { music_player->tempo = tempo; }
 
-void im_alive_ping(MusicPlayer *music_player, int count) {
-  if (!music_player->is_playing || count == 0) {
+void im_alive_ping(MusicPlayer *music_player, int send_data) {
+  if (!music_player->is_playing) {
     return;
   }
-  unsigned char note = music_player->note_idx;
-  CANMsg msg = {8, 3, 0, {0,0,0,0}};
-  int new_count = count;
-  if (count > 0) {
-    
+  CANMsg msg = {8, 3, 0, {0,0}};
+  if (send_data) {
     msg.length = 2;
-    msg.buff[0] = note;
+    msg.buff[0] = music_player->note_idx;
     msg.buff[1] = music_player->current_note_segment; 
-    new_count--;
-  } else {
-    new_count++;
   }
-  
-  music_player->current_note_segment++;
-  
-  CAN_SEND(&can0, &msg); 
-  
-  SEND(SEC(60.0 / music_player->tempo)/ 8, 0, music_player, im_alive_ping, new_count);
+    
+  CAN_SEND(&can0, &msg);
 }
 
 

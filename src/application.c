@@ -3,7 +3,7 @@
 #define PRESS_MOMENTARY 0
 #define PRESS_AND_HOLD 1
 
-App app = {initObject(), initTimer(), initTimer(), 0, 0, 3, {}, 3};
+App app = {initObject(), initTimer(), initTimer(), 0, 0, 1, {}, 1};
 
 MusicPlayer music_player = {initObject(), DEFAULT_KEY, DEFAULT_TEMPO, 0, 0, 1, 0};
 UserInputHandler userInputHandler = {initObject(), {}, 0};
@@ -141,6 +141,7 @@ void switch_conductor(App* self, int _) {
 void receiver(App *self, int unused) {
   CANMsg msg;
   CAN_RECEIVE(&can0, &msg);
+  if (msg.msgId == 8) return;
   print("Can MSG Recieved, msgId: %d ", msg.msgId);
   print("NodeID: %d ", msg.nodeId);
   print("Length: %d ", msg.length);

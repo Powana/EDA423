@@ -19,7 +19,7 @@
 #define T_769_Hz 650
 #define T_537_Hz 931
 #define T_384_Hz 1300
-#define VOLUME 12
+#define VOLUME 3
 #define DEFAULT_TEMPO 120
 #define DEFAULT_KEY 0
 
