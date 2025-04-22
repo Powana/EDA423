@@ -3,9 +3,9 @@
 #define PRESS_MOMENTARY 0
 #define PRESS_AND_HOLD 1
 
-App app = {initObject(), initTimer(), initTimer(), .user_button_mode=0, .trigger_mode=0, .inter_arrival_times={}, .tap_count=0, .bounce_flag=0, .rank=NODE_ID, .ranks={}, .network_size=1, .conductor=-1, .evaling_conductor=0};
+App app = {initObject(), initTimer(), initTimer(), .user_button_mode=0, .trigger_mode=0, .inter_arrival_times={}, .tap_count=0, .bounce_flag=0, .rank=NODE_ID, .ranks={}, .network_size=2, .conductor=-1, .evaling_conductor=0};
 
-MusicPlayer music_player = {initObject(), DEFAULT_KEY, DEFAULT_TEMPO, .note_idx=0, .is_playing=0, .is_led_blinking=0, .cur_note_modulo=0, .nth_note_to_play=0, .current_note_segment=0};
+MusicPlayer music_player = {initObject(), DEFAULT_KEY, DEFAULT_TEMPO, .note_idx=0, .is_playing=0, .is_led_blinking=0, .cur_note_modulo=0, .nth_note_to_play=0, .current_note_segment=0, .force_mute = 0};
 UserInputHandler userInputHandler = {initObject(), {}, 0};
 Tone_CTRL tone_ctrl = {initObject(), VOLUME, 0, 1, T_1000_Hz, 0, 0, 0};
 Distortion distortion = {initObject(), 1000, 0};

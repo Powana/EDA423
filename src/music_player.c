@@ -33,31 +33,39 @@ void play_next_note(MusicPlayer *music_player, int index) {
   music_player->note_idx = index;
   music_player->current_note_segment = 0;
   music_player->cur_note_modulo = (music_player->cur_note_modulo + 1) % app.network_size;
-
   int half_period =
-      periods[base_freq_indices[index] - MIN_FREQ_INDEX + music_player->key];
-
+  periods[base_freq_indices[index] - MIN_FREQ_INDEX + music_player->key];
+  
   float note_length;
   switch (note_lengths[index]) {
-  case 'a':
+    case 'a':
     note_length = 1.0;
     break;
-  case 'b':
+    case 'b':
     note_length = 2.0;
     break;
-  case 'c':
+    case 'c':
     note_length = 0.5;
     break;
   }
-
+  
   int note_duration_ms = (60000.0 / music_player->tempo) * note_length;
   SYNC(&tone_ctrl, set_period, half_period);
 
   // MUTE at end of note
+  
   SEND(MSEC(note_duration_ms - 75), MSEC(25), &tone_ctrl, mute_tone, 0);
-
+  AFTER(MSEC(note_duration_ms - 75), music_player, fmute, 0);
+  AFTER(MSEC(note_duration_ms), music_player, funmute, 0);
   // RECURSIVE CALL
   SEND(MSEC(note_duration_ms), 0, music_player, play_next_note, index + 1);
+}
+void fmute(MusicPlayer *music_player, int _) {
+  music_player->force_mute = 1;
+}
+
+void funmute(MusicPlayer *music_player, int _) {
+  music_player->force_mute = 0;
 }
 
 void check_segment(MusicPlayer *music_player, int _) {
@@ -67,7 +75,7 @@ void check_segment(MusicPlayer *music_player, int _) {
     SEND(MSEC(segment_duration_ms), MSEC(segment_duration_ms/8), &tone_ctrl, mute_tone, 0);
     print("Segment: Muted tone\n", 0);
   }
-  else if(music_player->cur_note_modulo == music_player->nth_note_to_play && ((&tone_ctrl)->mute == 1)) {  // We are playing our assigned note, or we have just jumped in and should start playing next segment
+  else if(music_player->cur_note_modulo == music_player->nth_note_to_play && ((&tone_ctrl)->mute == 1) && !music_player->force_mute) {  // We are playing our assigned note, or we have just jumped in and should start playing next segment
     SEND(MSEC(segment_duration_ms), MSEC(segment_duration_ms/8), &tone_ctrl, unmute_tone, 0);
     print("Segment: Unmuted tone\n", 0);
   }

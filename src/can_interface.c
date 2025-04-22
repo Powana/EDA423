@@ -8,11 +8,11 @@ void parse_can_input(App *self, int _) {
     CANMsg respMsg;
     CAN_RECEIVE(&can0, &msg);
     
-    int new_nodeID = 0;
+    int new_nodeID = 1;
     for (int i=0; i<MAX_NETWORK_SIZE; i++) {
         if (self->ranks[i] == msg.nodeId) new_nodeID = 0;
     }
-    if (new_nodeID) {
+    if (new_nodeID && msg.nodeId != self->rank) {
         self->ranks[self->network_size-1] = msg.nodeId;
         self->network_size++;
         SYNC(&music_player, update_nth_note_to_play, 0);

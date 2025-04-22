@@ -17,6 +17,7 @@ typedef struct {
   int cur_note_modulo;
   int nth_note_to_play;
   int current_note_segment;
+  int force_mute;
 } MusicPlayer;
 
 void play_music(MusicPlayer *music_player, int _);
@@ -29,5 +30,9 @@ void turn_led_off(MusicPlayer *self, int _);
 void blink_led(MusicPlayer *self, int _);
 void im_alive_ping(MusicPlayer *self, int _);
 void update_nth_note_to_play(MusicPlayer *self, int _);
+void fmute(MusicPlayer *music_player, int _);
+void funmute(MusicPlayer *music_player, int _);
+
+
 
 #endif
