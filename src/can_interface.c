@@ -57,14 +57,14 @@ void parse_can_input(App *self, int _) {
         if (msg.nodeId != self->conductor) return;
         ASYNC(&music_player, stop_music, 0);
         break;
-    case 6: // SET TEMPO
+    case 5: // SET TEMPO
         if (msg.nodeId != self->conductor) return;  // TODO: Check if we need to disregard messages from ourselves
         num = (int) msg.buff[1] << 8 | msg.buff[0];
         num = num > 300 ? 300 : (num < 30 ? 30 : num);
         print("Tempo: %d\n", num);
         ASYNC(&music_player, change_tempo, num);
         break;
-    case 7:  // SET KEY
+    case 6:  // SET KEY
         if (msg.nodeId != self->conductor) return;
         num = (int) msg.buff[0];
         num = num > 10 ? 10 : (num < 0 ? 0 : num);
@@ -72,14 +72,14 @@ void parse_can_input(App *self, int _) {
         print("Set Key: %d\n", num);
         ASYNC(&music_player, change_key, num);
         break;
-    case 8: // im alive
+    case 7: // im alive
         if (self->network_size == 1) {
-            CANMsg msg = {9,self->rank,0,{}};
+            CANMsg msg = {8,self->rank,0,{}};
             CAN_SEND(&can0, &msg);
             self->network_size += 1;
             // TODO add to known nodes
         }
-    case 9: // im new
+    case 8: // im new
         if(self->rank == msg.nodeId) return;
         int new = 1;
         for(int i = 0; i < self->network_size; i++) {
