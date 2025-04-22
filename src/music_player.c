@@ -5,7 +5,10 @@ extern Tone_CTRL tone_ctrl;
 
 void play_music(MusicPlayer *music_player, int _) {
   if (music_player->is_playing) {
-    print("Tone is already playing", 0);
+    print("Tone is already playing, Restarting.\n", 0);
+    music_player->cur_note_modulo = 0;
+    music_player->note_idx=0;
+    music_player->current_note_segment=0;
     return;
   }
   music_player-> cur_note_modulo = 0;
@@ -25,23 +28,22 @@ void stop_music(MusicPlayer *music_player, int _) {
   ASYNC(&tone_ctrl, stop_tone, 0);
 }
 
-void play_next_note(MusicPlayer *music_player, int index) {
+void play_next_note(MusicPlayer *music_player, int _) {
   if (!music_player->is_playing) {
     return;
   }
 
-  if (index > 31)
-    index = 0;
+  if (music_player->note_idx > 31)
+    music_player->note_idx = 0;
 
-  print("=== Play Note %d ===\n", index);
-  music_player->note_idx = index;
+  print("=== Play Note %d ===\n", music_player->note_idx);
   music_player->current_note_segment = 0;
   //music_player->cur_note_modulo = (music_player->cur_note_modulo + 1) % app.network_size;
   int half_period =
-  periods[base_freq_indices[index] - MIN_FREQ_INDEX + music_player->key];
+  periods[base_freq_indices[music_player->note_idx] - MIN_FREQ_INDEX + music_player->key];
   
   float note_length;
-  switch (note_lengths[index]) {
+  switch (note_lengths[music_player->note_idx]) {
     case 'a':
     note_length = 1.0;
     break;
@@ -58,11 +60,12 @@ void play_next_note(MusicPlayer *music_player, int index) {
 
   // MUTE at end of note
   
-  SEND(MSEC(note_duration_ms - 75), MSEC(25), &tone_ctrl, mute_tone, 0);
-  AFTER(MSEC(note_duration_ms - 75), music_player, fmute, 0);
+  SEND(MSEC(note_duration_ms - 50), MSEC(25), &tone_ctrl, mute_tone, 0);
+  AFTER(MSEC(note_duration_ms - 50), music_player, fmute, 0);
   AFTER(MSEC(note_duration_ms), music_player, funmute, 0);
   // RECURSIVE CALL
-  SEND(MSEC(note_duration_ms), 0, music_player, play_next_note, index + 1);
+  SEND(MSEC(note_duration_ms), 0, music_player, play_next_note, _);
+  music_player->note_idx++;
 }
 void fmute(MusicPlayer *music_player, int _) {
   music_player->force_mute = 1;

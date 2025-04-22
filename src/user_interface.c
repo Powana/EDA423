@@ -33,6 +33,7 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
       print("You are in musician mode", 0);
     break;
     */
+    break;
   case 'k':  // CHANGE KEY
     self->in_buffer[self->buf_index] = '\0';
     num = atoi(self->in_buffer);
@@ -43,7 +44,7 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
       ASYNC(&music_player, change_key, num);
 
     if(app.rank == app.conductor) { // Only send CAN msgs when conductor
-      msg.msgId = 7;
+      msg.msgId = 6;
       msg.length = 1;
       msg.buff[0] = num + 5;
       print("Send Key: %d\n", num+5);
@@ -61,7 +62,7 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
     if (!USE_CAN_ONLY)
       ASYNC(&music_player, change_tempo, num);
 
-    msg.msgId = 6;
+    msg.msgId = 5;
     msg.length = 2;
     msg.buff[0] = num & 0x00ff;
     msg.buff[1] = (num >> 8) & 0xff;
