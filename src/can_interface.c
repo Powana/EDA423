@@ -5,6 +5,7 @@ int conductor = 3; // TODO Temp
 extern MusicPlayer music_player;
 void parse_can_input(App *self, int _) {
     CANMsg msg;
+    CANMsg respMsg;
     CAN_RECEIVE(&can0, &msg);
     if (msg.msgId == 8) return;
     print("Can MSG Recieved, msgId: %d ", msg.msgId);
@@ -16,10 +17,13 @@ void parse_can_input(App *self, int _) {
     int num; 
     switch (msg.msgId) {
     case 0:
-        ;
-        CANMsg respMsg = {1,self->rank,0,{}};
+        respMsg.msgId = 1;
+        respMsg.nodeId = self->rank;
+        respMsg.length = 0;
+        //= (CANMsg) {1,self->rank,0,{}};
         CAN_SEND(&can0, &respMsg);
         break;
+        
     case 1:
         for (int i=0; i<MAX_NETWORK_SIZE; i++) {
             if (self->ranks[i] == msg.nodeId) return;
@@ -44,23 +48,24 @@ void parse_can_input(App *self, int _) {
         break;
     
     case 3: // START
-        if (msg.nodeId != conductor) return;
+        if (msg.nodeId != self->conductor) return;
         ASYNC(&music_player, play_music, 0);
         // ASYNC(&music_player, im_alive_ping, 0);  // TODO, Remove this if using the count implementation
         break;
+        
     case 4: // STOP
-        if (msg.nodeId != conductor) return;
+        if (msg.nodeId != self->conductor) return;
         ASYNC(&music_player, stop_music, 0);
         break;
     case 6: // SET TEMPO
-        if (msg.nodeId != conductor) return;  // TODO: Check if we need to disregard messages from ourselves
+        if (msg.nodeId != self->conductor) return;  // TODO: Check if we need to disregard messages from ourselves
         num = (int) msg.buff[1] << 8 | msg.buff[0];
         num = num > 300 ? 300 : (num < 30 ? 30 : num);
         print("Tempo: %d\n", num);
         ASYNC(&music_player, change_tempo, num);
         break;
     case 7:  // SET KEY
-        if (msg.nodeId != conductor) return;
+        if (msg.nodeId != self->conductor) return;
         num = (int) msg.buff[0];
         num = num > 10 ? 10 : (num < 0 ? 0 : num);
         num = num - 5;
@@ -76,7 +81,7 @@ void parse_can_input(App *self, int _) {
         }
     case 9: // im new
         int new = 1;
-        for(int i = 0; i < (self->network_size - 1)/sizeof(int); i++) {
+        for(int i = 0; i < self->network_size; i++) {
             if(self->ranks[i] == msg.buff[0]){
                 new = 0;
             }
@@ -85,6 +90,7 @@ void parse_can_input(App *self, int _) {
             self->ranks[self->network_size] = msg.buff[0];
             self->network_size++;
         }
+            
         break;
     default:
         break;
