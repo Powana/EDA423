@@ -23,6 +23,7 @@
 #define DEFAULT_KEY 0
 #define NODE_ID 3
 #define MAX_NETWORK_SIZE 3
+#define CONDUCTOR_CLASH_MS 500
 
 typedef struct {
   Object super;

@@ -13,7 +13,7 @@ Serial sci0 = initSerial(SCI_PORT0, &app, reader);
 Can can0 = initCan(CAN_PORT0, &app, parse_can_input);
 SysIO sio0 = initSysIO(SIO_PORT0, &app, sio_receive);
 int pending_conductor = 0;
-int base_freq_indices[32] = {0, 2, 4, 0, 0, 2, 4, 0, 4, 5, 7, 4,  5, 7, 7,  9,
+int base_freq_indices[32] = {0, 2, 4, 0, 0, 2, 4, 0, 4, 5, 7, 4,  5, 7, 7, 9,
                              7, 5, 4, 0, 7, 9, 7, 5, 4, 0, 0, -5, 0, 0, -5, 0};
 // freq indices corresponding to -10 to 14
 int periods[25] = {2025, 1911, 1804, 1703, 1607, 1517, 1432, 1351, 1276,
@@ -133,6 +133,7 @@ void switch_conductor(App* self, int _) {
   print("switched conductor to %d\n", pending_conductor);
   self->conductor = pending_conductor;
   self->evaling_conductor = 0;
+  pending_conductor = 0;
   
 }
 

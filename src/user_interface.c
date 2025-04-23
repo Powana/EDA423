@@ -17,14 +17,25 @@ extern App app;
 
 void parse_user_input(UserInputHandler *self, int inputDigit) {
   switch ((char)inputDigit) {
+  case 'z':
+    print("Our node: %d ", NODE_ID);
+    print("is cond: %d\n", app.conductor == NODE_ID);
+    for (int i=0; i<app.network_size-1; i++) {
+      print("Node: %d ", app.ranks[i]);
+      print("is cond: %d\n", app.conductor == app.ranks[i]);
+    }
+    break;
   case 'o':
     if (app.conductor != app.rank) {
       print("Requesting conductor mode\n", 0);
       if (!(app.evaling_conductor)) {
-        AFTER(MSEC(200), &app, switch_conductor, 0);
+        AFTER(MSEC(CONDUCTOR_CLASH_MS), &app, switch_conductor, 0);
+        app.evaling_conductor = 1;
+        pending_conductor = NODE_ID;
       }
-      pending_conductor = NODE_ID;
-      app.evaling_conductor = 1;
+      if (NODE_ID < pending_conductor) {
+        pending_conductor = NODE_ID;
+      }
       msg.msgId = 2;
       CAN_SEND(&can0, &msg);
     }

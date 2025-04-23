@@ -19,7 +19,7 @@ void parse_can_input(App *self, int _) {
         SYNC(&music_player, update_nth_note_to_play, 0);
     }
     
-    if (msg.msgId != 7) {
+    if ((msg.msgId != 7) && (msg.msgId != 0)) {
         print("Can MSG Recieved, msgId: %d ", msg.msgId);
         print("NodeID: %d ", msg.nodeId);
         print("Length: %d ", msg.length);
@@ -52,8 +52,8 @@ void parse_can_input(App *self, int _) {
         if (!(self->evaling_conductor)) {
             self->evaling_conductor = 1;
             print("starting evaling conductor\n", 0);
-            pending_conductor = msg.nodeId;  // TODO: This will not update the conductor until after 200msec
-            AFTER(MSEC(200), &app, switch_conductor, 0);
+            pending_conductor = msg.nodeId;
+            AFTER(MSEC(CONDUCTOR_CLASH_MS), &app, switch_conductor, 0);
         }
         break;
     
