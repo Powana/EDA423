@@ -9,7 +9,7 @@ void parse_can_input(App *self, int _) {
     CAN_RECEIVE(&can0, &msg);
     
     int new_nodeID = 1;
-    for (int i=0; i<MAX_NETWORK_SIZE; i++) {
+    for (int i=0; i<app.network_size-1; i++) {  // TODO: Change to use app.network_size
         if (self->ranks[i] == msg.nodeId) new_nodeID = 0;
     }
     if (new_nodeID && msg.nodeId != self->rank) {
@@ -83,12 +83,29 @@ void parse_can_input(App *self, int _) {
         ASYNC(&music_player, change_key, num);
         break;
     case 7: // im alive
-        if (self->network_size == 1) {
+        if (self->network_size == 1) { // TODO Fix, this wont be called anymore as the network size will already be updated.
             CANMsg msg = {8,self->rank,0,{}};
             CAN_SEND(&can0, &msg);
             self->network_size += 1;
             // TODO add to known nodes
         }
+        for (int i=0; i < app.network_size-1; i++) {
+            if (app.ranks[i] == msg.nodeId) {           // Node sending Im Alive is in current network
+                print("Recieved Im alive from %d\n", msg.nodeId);
+                app.still_alive[i] = msg.nodeId;        // todo temp line
+                if (msg.length == 2) {                  // Sender is currently playing
+                    if (msg.buff[0] >= music_player.note_idx && msg.buff[1] >= music_player.current_note_segment) { // Is the message up to date with our melody position?
+                        app.still_alive[i] = msg.nodeId;
+                        // TODO: If the player is ahead of us, catch up my updating the idxs
+                    }
+                    else {} // The Im alive ping is old / behind us in the melody
+                }
+                else { // Sender is not playing
+                    app.still_alive[i] = msg.nodeId;
+                } 
+            }
+            else {} // Sender is not in current network, this should never be reached
+        } 
     case 8: // im new
         if(self->rank == msg.nodeId) return;
         break;

@@ -37,3 +37,11 @@ int min(int* array, int array_len) {
     } 
     return res;
 }
+
+int get_rank_order(int rank, int* ranks, int ranks_len) {
+    int less_than = 0;
+    for(int i = 0; i < ranks_len; i++) {
+        if (ranks[i] < rank) less_than++;
+    }
+    return less_than;
+}

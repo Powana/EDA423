@@ -24,6 +24,7 @@
 #define NODE_ID 3
 #define MAX_NETWORK_SIZE 3
 
+
 typedef struct {
   Object super;
   Timer arrival_timer;
@@ -38,6 +39,7 @@ typedef struct {
   int network_size;
   int conductor;
   int evaling_conductor;
+  int still_alive[MAX_NETWORK_SIZE];
 } App;
 
 extern App app;

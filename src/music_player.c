@@ -19,6 +19,11 @@ void play_music(MusicPlayer *music_player, int _) {
   SEND(0, MSEC(1), music_player, play_next_note, 0);
   SEND(0, MSEC(2), music_player, check_segment, 0);  // TODO: Set proper deadline > 0
 
+  // Reset alive nodes
+  for (int i=0; i<app.network_size-1; i++) {
+    app.still_alive[i] = 0;
+  }
+
   blink_led(music_player, 0);
 }
 
@@ -36,7 +41,8 @@ void play_next_note(MusicPlayer *music_player, int _) {
   if (music_player->note_idx > 31)
     music_player->note_idx = 0;
 
-  print("=== Play Note %d ===\n", music_player->note_idx);
+  print("=== Play Note %d: Playing:", music_player->note_idx);
+  print(" %d ===\n", music_player->cur_note_modulo == music_player->nth_note_to_play);
   music_player->current_note_segment = 0;
   //music_player->cur_note_modulo = (music_player->cur_note_modulo + 1) % app.network_size;
   int half_period =
@@ -78,12 +84,13 @@ void funmute(MusicPlayer *music_player, int _) {
 void check_segment(MusicPlayer *music_player, int _) {
   if (!music_player->is_playing) return;
   int segment_duration_ms = (60000.0 / music_player->tempo) / 8;  // TODO Maybe move caclulation outside of function
+  /*
   print("Segment_duration: %d ", segment_duration_ms);
   print("cur_note_modulor: %d ", music_player->cur_note_modulo);
   print("nth_note_to_play: %d ", music_player->nth_note_to_play);
   print("current_note_segment %d ", music_player->current_note_segment);
   print("tone_ctrl->mute: %d ", (&tone_ctrl)->mute);
-  print("app.network_size: %d \n", app.network_size);
+  print("app.network_size: %d \n", app.network_size);*/
   if(music_player->current_note_segment == 0) {
     music_player->cur_note_modulo = (music_player->cur_note_modulo + 1) % app.network_size;
   }
@@ -110,14 +117,61 @@ void im_alive_ping(MusicPlayer *music_player, int send_data) {
   if (!music_player->is_playing) {
     return;
   }
-  CANMsg msg = {7, 3, 0, {0,0}};
+  CANMsg msg = {7, NODE_ID, 0, {0,0}};
   if (send_data) {
     msg.length = 2;
     msg.buff[0] = music_player->note_idx;
     msg.buff[1] = music_player->current_note_segment; 
   }
+  print("Sending Im alive from %d\n", NODE_ID);
     
   CAN_SEND(&can0, &msg);
+  
+  int alive_nodes[MAX_NETWORK_SIZE];
+  int alive_nodes_idx = 0;
+  int deaths = 0;
+  for (int i=0; i < app.network_size-1; i++) {
+    print("i: %d ", i);
+    print("ranks: %d ", app.ranks[i]);
+    print("still_Alive: %d \n", app.still_alive[i]);
+    if (app.still_alive[i] != -1) {
+      alive_nodes[alive_nodes_idx] = app.ranks[i];
+      alive_nodes_idx++;
+    }
+    else {
+      print("Rank at rankidx %d died\n", i);
+      deaths++;
+    }
+    app.still_alive[i] = -1;
+  }
+  if (deaths > 0) {
+    app.network_size -= deaths;
+    for (int i=0; i<app.network_size-1; i++) {
+      app.ranks[i] = alive_nodes[i];
+    }
+    SEND(0, 0, music_player, update_nth_note_to_play, 0);
+  }
+  /*
+  // Check which nodes have sent Im alive ping since last time
+  int deaths = 0;
+  int rankidx=0;
+  for (int i=0; i < app.network_size-1; i++) {
+    if (app.still_alive[i] == -1) {  // Node at i in ranks has not sent ping
+      print("Death detected with nodeID: %d\n", app.ranks[i]);
+      deaths++;
+      if (app.ranks[rankidx] == app.conductor) {
+        // TODO
+      }
+      for (int j=rankidx; j<app.network_size-1; j++) {
+        app.ranks[j] = app.ranks[j+1]; // Shuffle remaing ranks forward
+      }
+      rankidx--;
+    }
+    rankidx++;
+    app.still_alive[i] = -1; // Reset flag
+  }
+  app.network_size -= deaths;
+  SEND(0, 0, music_player, update_nth_note_to_play, 0);*/
 }
 
 
