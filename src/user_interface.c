@@ -16,12 +16,12 @@ extern App app;
 
 void burst_msg_sender(UserInputHandler *self, int _) {
   if (!self->burst_active) return;
-  CANMsg burst_msg;
-  burst_msg.msgId = self->prob5_seq;
+  CANMsg burst_canmsg;
+  burst_canmsg.msgId = self->prob5_seq;
   self->prob5_seq = self->prob5_seq == 127 ? 0 : self->prob5_seq + 1;
 
-  if (app.print_can_tx) print("Transmitting CAN msg with ID: %d\n", burst_msg.msgId);
-  CAN_SEND(&can0, &burst_msg);
+  if (app.print_can_tx) print("Transmitting CAN msg with ID: %d\n", burst_canmsg.msgId);
+  CAN_SEND(&can0, &burst_canmsg);
 
   self->burst_msg = SEND(MSEC(500), 0, self, burst_msg_sender, 0);
 }

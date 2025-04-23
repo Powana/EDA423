@@ -10,7 +10,7 @@ typedef struct UserInputHandler {
   Object super;
   char in_buffer[255];
   int buf_index;
-  int prob5_seq;
+  uchar prob5_seq;
   int burst_active;
   Msg burst_msg;
 } UserInputHandler;
