@@ -28,15 +28,7 @@ void burst_msg_sender(UserInputHandler *self, int _) {
 
 void parse_user_input(UserInputHandler *self, int inputDigit) {
   switch ((char)inputDigit) {
-  case 'z':
-    print("Our node: %d ", NODE_ID);
-    print("is cond: %d\n", app.conductor == NODE_ID);
-    for (int i=0; i<app.network_size-1; i++) {
-      print("Node: %d ", app.ranks[i]);
-      print("is cond: %d\n", app.conductor == app.ranks[i]);
-    }
-    break;
-  
+
   case 'B':  // Prob 5, Burst
     print("Starting Burst\n", 0);
     self->burst_active = 1;
@@ -44,6 +36,7 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
     break;
   
   case 'X': // Stop burst
+    if (!self->burst_active) return;
     print("Stopping Burst\n", 0);
     self->burst_active = 0;
     ABORT(self->burst_msg);

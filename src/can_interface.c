@@ -1,7 +1,7 @@
 #include "can_interface.h"
 #include "application.h"
 
-CANMsg can_msg;
+CANMsg can_msg = {0,0,0,{}};
 
 // === Problem 5 ===
 void can_regulator(App *self, int _) {
