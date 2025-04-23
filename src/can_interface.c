@@ -1,13 +1,39 @@
+#include "can_interface.h"
 #include "application.h"
+
 
 int conductor = 3; // TODO Temp
 
 extern MusicPlayer music_player;
-void parse_can_input(App *self, int _) {
-    CANMsg msg;
+
+// === Problem 5 ===
+void can_regulator(App *self, int _) {
+    if (self->can_queue_size == MAX_CAN_QUEUE_SIZE) return;  // Queue is full, discard the message
+    self->can_queue_end = (self->can_queue_end + 1) % MAX_CAN_QUEUE_SIZE;
+    CAN_RECEIVE(&can0, self->can_queue[self->can_queue_end]);
+
+    if (!self->can_cooldown_active && self->can_queue_size == 1)
+        self->can_cooldown_active = 1;
+        ASYNC(self, deliver_next_can_msg_in_q, 0);
+}
+
+void deliver_next_can_msg_in_q(App *self, int _) {
+    if (self->can_queue_size == 0) { // Queue is empty
+        self->can_cooldown_active = 0;
+        return; 
+    }
+    ASYNC(self, parse_next_can_message, 0);
+
+    SEND(SEC(1), 0, self, deliver_next_can_msg_in_q, 0);
+}
+
+
+void parse_next_can_message(App *self, int _) {
+    CANMsg msg = *self->can_queue[self->can_queue_start];
+    self->can_queue_start = (self->can_queue_start + 1) % MAX_CAN_QUEUE_SIZE;
+    self->can_queue_size--;
+
     CANMsg respMsg;
-    CAN_RECEIVE(&can0, &msg);
-    
     int new_nodeID = 1;
     for (int i=0; i<MAX_NETWORK_SIZE; i++) {
         if (self->ranks[i] == msg.nodeId) new_nodeID = 0;
@@ -37,7 +63,7 @@ void parse_can_input(App *self, int _) {
         break;
         
     case 1:
-        if (msg.nodeId == app.rank) return;
+        if (msg.nodeId == self->rank) return;
         break;
 
         break;

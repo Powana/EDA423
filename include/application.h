@@ -24,6 +24,7 @@
 #define NODE_ID 3
 #define MAX_NETWORK_SIZE 3
 #define CONDUCTOR_CLASH_MS 500
+#define MAX_CAN_QUEUE_SIZE 256
 
 typedef struct {
   Object super;
@@ -39,6 +40,12 @@ typedef struct {
   int network_size;
   int conductor;
   int evaling_conductor;
+  int send_can_to_queue;
+  CANMsg* can_queue[MAX_CAN_QUEUE_SIZE];
+  int can_queue_start;
+  int can_queue_end;
+  int can_queue_size;
+  int can_cooldown_active;
 } App;
 
 extern App app;

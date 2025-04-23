@@ -3,14 +3,14 @@
 #define PRESS_MOMENTARY 0
 #define PRESS_AND_HOLD 1
 
-App app = {initObject(), initTimer(), initTimer(), .user_button_mode=0, .trigger_mode=0, .inter_arrival_times={}, .tap_count=0, .bounce_flag=0, .rank=NODE_ID, .ranks={}, .network_size=1, .conductor=-1, .evaling_conductor=0};
+App app = {initObject(), initTimer(), initTimer(), .user_button_mode=0, .trigger_mode=0, .inter_arrival_times={}, .tap_count=0, .bounce_flag=0, .rank=NODE_ID, .ranks={}, .network_size=1, .conductor=-1, .evaling_conductor=0, .can_queue={}, .can_queue_start=0, .can_queue_end=MAX_CAN_QUEUE_SIZE-1, .can_queue_size=0, .can_cooldown_active=0};
 
 MusicPlayer music_player = {initObject(), DEFAULT_KEY, DEFAULT_TEMPO, .note_idx=-1, .is_playing=0, .is_led_blinking=0, .nth_note_to_play=0, .current_note_segment=0, .force_mute = 0};
 UserInputHandler userInputHandler = {initObject(), {}, 0};
 Tone_CTRL tone_ctrl = {initObject(), VOLUME, 0, 1, T_1000_Hz, 0, 0, 0};
 Distortion distortion = {initObject(), 1000, 0};
 Serial sci0 = initSerial(SCI_PORT0, &app, reader);
-Can can0 = initCan(CAN_PORT0, &app, parse_can_input);
+Can can0 = initCan(CAN_PORT0, &app, can_regulator);
 SysIO sio0 = initSysIO(SIO_PORT0, &app, sio_receive);
 int pending_conductor = 0;
 int base_freq_indices[32] = {0, 2, 4, 0, 0, 2, 4, 0, 4, 5, 7, 4,  5, 7, 7, 9,
@@ -130,10 +130,17 @@ void switch_to_held_mode(App *self, int _) {
 }
 
 void switch_conductor(App* self, int _) {
-  print("switched conductor to %d\n", pending_conductor);
+  print("Switched conductor to %d\n", pending_conductor);
+  if (pending_conductor == NODE_ID) {
+    print("Claimed Conductorship.\n", 0);
+  }
+  else if (self->conductor == NODE_ID) {
+    print("Conductorship void.\n.", 0);
+  }
   self->conductor = pending_conductor;
   self->evaling_conductor = 0;
   pending_conductor = 0;
+
   
 }
 

@@ -4,6 +4,8 @@
 #include "canTinyTimber.h"
 #include "can_interface.h"
 #include "music_player.h"
-void parse_can_input(App *self, int _);
+void can_regulator(App *self, int _);
+void deliver_next_can_msg_in_q(App *self, int _);
+void parse_next_can_message(App *self, int _);
 
 #endif
