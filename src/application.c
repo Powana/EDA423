@@ -138,10 +138,11 @@ void switch_conductor(App* self, int _) {
 
 void print_every_T(App *self, int _) {
   if(self->conductor == NODE_ID) {
-    print("I am Conductor", 0);
+    print("Tempo: %d\n", music_player.tempo);
   } else {
-    print("I am Musician", 0);
+    if(tone_ctrl.mute) print("MUTED\n", 0);
   }
+  AFTER(SEC(5), self, print_every_T, 0);
 }
 
 void reader(App *self, int c) {
@@ -153,6 +154,7 @@ void startApp(App *self, int arg) {
   SCI_INIT(&sci0);
   SIO_INIT(&sio0);
   SCI_WRITE(&sci0, "Ready.\n");
+  AFTER(SEC(5), self, print_every_T, 0);
 }
 
 int main() {
