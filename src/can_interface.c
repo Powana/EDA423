@@ -90,6 +90,12 @@ void parse_can_input(App *self, int _) {
             // TODO add to known nodes
         }
         for (int i=0; i < app.network_size-1; i++) {
+            if (app.ranks[i] == msg.nodeId) {
+                app.still_alive[i] = 0;
+            }
+        }
+        /*
+        for (int i=0; i < app.network_size-1; i++) {
             if (app.ranks[i] == msg.nodeId) {           // Node sending Im Alive is in current network
                 print("Recieved Im alive from %d\n", msg.nodeId);
                 app.still_alive[i] = msg.nodeId;        // todo temp line
@@ -105,7 +111,9 @@ void parse_can_input(App *self, int _) {
                 } 
             }
             else {} // Sender is not in current network, this should never be reached
-        } 
+        }
+        */
+        break;
     case 8: // im new
         if(self->rank == msg.nodeId) return;
         break;

@@ -47,7 +47,9 @@ void play_next_note(MusicPlayer *music_player, int _) {
   //music_player->cur_note_modulo = (music_player->cur_note_modulo + 1) % app.network_size;
   int half_period =
   periods[base_freq_indices[music_player->note_idx] - MIN_FREQ_INDEX + music_player->key];
-  
+  print("cur_note_modulo: %d \n", music_player->cur_note_modulo);
+  print("nth_note_to_play: %d \n", music_player->nth_note_to_play);
+  print("app.network_size: %d \n\n", app.network_size);
   float note_length;
   switch (note_lengths[music_player->note_idx]) {
     case 'a':
@@ -123,13 +125,32 @@ void im_alive_ping(MusicPlayer *music_player, int send_data) {
     msg.buff[0] = music_player->note_idx;
     msg.buff[1] = music_player->current_note_segment; 
   }
-  print("Sending Im alive from %d\n", NODE_ID);
+  //print("Sending Im alive from %d\n", NODE_ID);
     
   CAN_SEND(&can0, &msg);
   
   int alive_nodes[MAX_NETWORK_SIZE];
   int alive_nodes_idx = 0;
   int deaths = 0;
+  for(int i = 0; i < app.network_size-1; i++){
+    if(app.still_alive[i] > 1) {
+      if (app.ranks[i] < app.rank) {
+        music_player->cur_note_modulo -= 1;
+      }
+      app.network_size -= 1;
+      for (int j = i; j < app.network_size-1; j++ ) {
+        app.ranks[j] = app.ranks[j+1];
+        app.still_alive[j] = app.ranks[j+1];
+      }
+      i--;
+    }
+    music_player->cur_note_modulo = music_player->cur_note_modulo % app.network_size;
+  }
+  for(int i = 0; i < app.network_size-1; i++){
+    app.still_alive[i] += 1;
+  }
+  
+  /*
   for (int i=0; i < app.network_size-1; i++) {
     print("i: %d ", i);
     print("ranks: %d ", app.ranks[i]);
@@ -153,6 +174,7 @@ void im_alive_ping(MusicPlayer *music_player, int send_data) {
 
     SEND(0, 0, music_player, update_nth_note_to_play, 0);
   }
+  */
   /*
   // Check which nodes have sent Im alive ping since last time
   int deaths = 0;
