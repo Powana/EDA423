@@ -136,6 +136,14 @@ void switch_conductor(App* self, int _) {
   
 }
 
+void print_every_T(App *self, int _) {
+  if(self->conductor == NODE_ID) {
+    print("I am Conductor", 0);
+  } else {
+    print("I am Musician", 0);
+  }
+}
+
 void reader(App *self, int c) {
   ASYNC(&userInputHandler, parse_user_input, c);
 }
