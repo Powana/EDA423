@@ -10,10 +10,22 @@
 int num = 0;
 int i;
 
-CANMsg msg = {.msgId = -1, .nodeId = NODE_ID, .length=0, .buff={0}}; // TODO Un-hardcode rank 
 extern MusicPlayer music_player;
 extern Tone_CTRL tone_ctrl;
 extern App app;
+
+void burst_msg_sender(UserInputHandler *self, int _) {
+  if (!self->burst_active) return;
+  CANMsg burst_msg;
+  burst_msg.msgId = self->prob5_seq;
+  if (app.print_can_tx) print("Transmitting A: %d\n", self->prob5_seq);
+  self->prob5_seq = self->prob5_seq == 127 ? 0 : self->prob5_seq + 1;
+
+  CAN_SEND(&can0, &burst_msg);
+  if (app.print_can_tx) print("Transmitting CAN msg with ID: %d\n", burst_msg.msgId);
+
+  self->burst_msg = SEND(MSEC(500), 0, self, burst_msg_sender, 0);
+}
 
 void parse_user_input(UserInputHandler *self, int inputDigit) {
   switch ((char)inputDigit) {
@@ -25,96 +37,30 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
       print("is cond: %d\n", app.conductor == app.ranks[i]);
     }
     break;
-  case 'o':
-    if (app.conductor != app.rank) {
-      print("Requesting conductor mode\n", 0);
-      if (!(app.evaling_conductor)) {
-        AFTER(MSEC(CONDUCTOR_CLASH_MS), &app, switch_conductor, 0);
-        app.evaling_conductor = 1;
-        pending_conductor = NODE_ID;
-      }
-      if (NODE_ID < pending_conductor) {
-        pending_conductor = NODE_ID;
-      }
-      msg.msgId = 2;
-      CAN_SEND(&can0, &msg);
-    }
-    /* TODO: Discuss what happens when the conductor node tries to swap to musician, does another node have to take over?
-    if (app.conductor == app.rank)
-      print("You are in musician mode", 0);
-    break;
-    */
-    break;
-  case 'k':  // CHANGE KEY
-    self->in_buffer[self->buf_index] = '\0';
-    num = atoi(self->in_buffer);
-    num = num > 5 ? 5 : (num < -5 ? -5 : num);
-    self->buf_index = 0;
-
-    if (app.conductor == app.rank && !USE_CAN_ONLY)
-      ASYNC(&music_player, change_key, num);
-
-    if(app.rank == app.conductor) { // Only send CAN msgs when conductor
-      msg.msgId = 6;
-      msg.length = 1;
-      msg.buff[0] = num + 5;
-      print("Send Key: %d\n", num+5);
-      CAN_SEND(&can0, &msg);
-    }
-    break;
-  case 't':
-    self->in_buffer[self->buf_index] = '\0';
-    self->buf_index = 0;
-    if (app.conductor != app.rank) return;
-
-    num = atoi(self->in_buffer);
-    num = num > 300 ? 300 : (num < 30 ? 30 : num);
-    print("New Tempo set to: %d\n", num);
-    if (!USE_CAN_ONLY)
-      ASYNC(&music_player, change_tempo, num);
-
-    msg.msgId = 5;
-    msg.length = 2;
-    msg.buff[0] = num & 0x00ff;
-    msg.buff[1] = (num >> 8) & 0xff;
-    CAN_SEND(&can0, &msg);
-    break;
-  case 'm':
-    ASYNC(&tone_ctrl, toggle_user_mute, 0);
-    // msg.length = 1;
-    // msg.buff[0] = 'm';
-    // CAN_SEND(&can0, &msg);
-    break;
-  case 'i':
-    ASYNC(&tone_ctrl, adjust_volume, 1);
-    //msg.length = 1;
-    //msg.buff[0] = 'i';
-    //CAN_SEND(&can0, &msg);
-    break;
-  case 'd':
-    ASYNC(&tone_ctrl, adjust_volume, -1);
-    // msg.length = 1;
-    // msg.buff[0] = 'd';
-    // CAN_SEND(&can0, &msg);
-    break;
-  case 'p':
-    if (app.conductor != app.rank) return;
-    if (!USE_CAN_ONLY) ASYNC(&music_player, play_music, 0);
-    msg.msgId = 0;
-    msg.length = 0;
-    CAN_SEND(&can0, &msg);
-
-    msg.msgId = 3;
-    msg.length = 0;
-    CAN_SEND(&can0, &msg);
-    break;
-  case 's':
-    if (app.conductor != app.rank) return;
-    if (!USE_CAN_ONLY) ASYNC(&music_player, stop_music, 0);
   
-    msg.length = 0;
-    msg.msgId = 4;
-    CAN_SEND(&can0, &msg);
+  case 'B':  // Prob 5, Burst
+    print("Starting Burst\n", 0);
+    self->burst_active = 1;
+    self->burst_msg = ASYNC(self, burst_msg_sender, 0);
+    break;
+  
+  case 'X': // Stop burst
+    print("Stopping Burst\n", 0);
+    self->burst_active = 0;
+    ABORT(self->burst_msg);
+    break;
+  
+  case 'I': // Set can msg interval, in s, min 1.
+    self->in_buffer[self->buf_index] = '\0';
+    num = atoi(self->in_buffer);
+    num = num ? num : 1; // Set num to 1 if is zero
+    self->buf_index = 0;
+    print("Setting CAN interval to %d (s)\n", num);
+    app.can_msg_min_interval_ms = num*1000; 
+    break;
+
+  case 'P':
+    app.print_can_tx = !app.print_can_tx;
     break;
   default:
     self->in_buffer[self->buf_index++] = inputDigit;

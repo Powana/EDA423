@@ -27,6 +27,11 @@
 #define MAX_CAN_QUEUE_SIZE 256
 
 typedef struct {
+  int msgId;
+  Time arrival_time;
+} MiniMsg;
+
+typedef struct {
   Object super;
   Timer arrival_timer;
   Timer hold_timer;
@@ -41,11 +46,14 @@ typedef struct {
   int conductor;
   int evaling_conductor;
   int send_can_to_queue;
-  CANMsg* can_queue[MAX_CAN_QUEUE_SIZE];
+  MiniMsg can_queue[MAX_CAN_QUEUE_SIZE];
   int can_queue_start;
   int can_queue_end;
   int can_queue_size;
   int can_cooldown_active;
+  int can_msg_min_interval_ms;
+  Timer app_start_time;
+  int print_can_tx;
 } App;
 
 extern App app;
@@ -59,6 +67,7 @@ extern int min_index;
 extern int max_index;
 extern int mode;
 extern int pending_conductor;
+
 
 void reader(App *, int);
 void receiver(App *, int);
