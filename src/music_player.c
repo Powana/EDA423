@@ -141,6 +141,7 @@ void im_alive_ping(MusicPlayer *music_player, int send_data) {
     else {
       print("Rank at rankidx %d died\n", i);
       deaths++;
+      if (app.ranks[i] < NODE_ID) music_player->cur_note_modulo = (music_player->cur_note_modulo - 1) % (app.network_size - deaths);
     }
     app.still_alive[i] = -1;
   }
@@ -149,6 +150,7 @@ void im_alive_ping(MusicPlayer *music_player, int send_data) {
     for (int i=0; i<app.network_size-1; i++) {
       app.ranks[i] = alive_nodes[i];
     }
+
     SEND(0, 0, music_player, update_nth_note_to_play, 0);
   }
   /*
