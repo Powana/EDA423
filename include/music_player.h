@@ -14,7 +14,7 @@ typedef struct {
   int note_idx;
   int is_playing;
   int is_led_blinking;
-  int cur_note_modulo;
+  // int cur_note_modulo;
   int nth_note_to_play;
   int current_note_segment;
   int force_mute;
