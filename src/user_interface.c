@@ -30,6 +30,7 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
   switch ((char)inputDigit) {
 
   case 'B':  // Prob 5, Burst
+    if (self->burst_active) return;
     print("Starting Burst\n", 0);
     self->burst_active = 1;
     self->burst_msg = ASYNC(self, burst_msg_sender, 0);
