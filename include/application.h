@@ -7,10 +7,7 @@
 #include "TinyTimber.h"
 #include "canTinyTimber.h"
 #include "sciTinyTimber.h"
-#include "sioTinyTimber.h"
 
-#include "music_player.h"
-#include "tone_generator.h"
 #include "user_interface.h"
 
 // Distrubance freq 384Hz = 1300
@@ -45,6 +42,7 @@ typedef struct {
   int network_size;
   int conductor;
   int evaling_conductor;
+  // === Problem 5 === 
   int send_can_to_queue;
   MiniMsg can_queue[MAX_CAN_QUEUE_SIZE];
   int can_queue_start;
@@ -54,6 +52,7 @@ typedef struct {
   int can_msg_min_interval_ms;
   Timer app_start_time;
   int print_can_tx;
+  // ================
 } App;
 
 extern App app;
@@ -81,6 +80,5 @@ extern Serial sci0;
 
 extern Can can0;
 
-extern SysIO sio0;
 
 #endif

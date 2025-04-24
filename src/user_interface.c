@@ -1,17 +1,12 @@
 #include "user_interface.h"
 #include "application.h"
 #include "canTinyTimber.h"
-#include "music_player.h"
-#include "tone_generator.h"
 #include <string.h>
 
 #define USE_CAN_ONLY 0
 
 int num = 0;
-int i;
 
-extern MusicPlayer music_player;
-extern Tone_CTRL tone_ctrl;
 extern App app;
 
 void burst_msg_sender(UserInputHandler *self, int _) {
