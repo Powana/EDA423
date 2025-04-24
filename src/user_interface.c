@@ -25,6 +25,15 @@ void burst_msg_sender(UserInputHandler *self, int _) {
 
   self->burst_msg = SEND(MSEC(500), 0, self, burst_msg_sender, 0);
 }
+void send_one_message(UserInputHandler *self, int _) {
+  CANMsg canmsg;
+  canmsg.msgId = self->prob5_seq;
+  self->prob5_seq = self->prob5_seq == 127 ? 0 : self->prob5_seq + 1;
+
+  if (app.print_can_tx) print("Transmitting CAN msg with ID: %d\n", canmsg.msgId);
+  CAN_SEND(&can0, &canmsg);
+
+}
 
 void parse_user_input(UserInputHandler *self, int inputDigit) {
   switch ((char)inputDigit) {
@@ -35,7 +44,10 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
     self->burst_active = 1;
     self->burst_msg = ASYNC(self, burst_msg_sender, 0);
     break;
-  
+  case 'O':
+    print("Sending one message\n", 0);
+    ASYNC(self, send_one_message, 0);
+    break;
   case 'X': // Stop burst
     if (!self->burst_active) return;
     print("Stopping Burst\n", 0);

@@ -27,7 +27,7 @@
 #define MAX_CAN_QUEUE_SIZE 256
 
 typedef struct {
-  int msgId;
+  uchar msgId;
   Time arrival_time;
 } MiniMsg;
 
