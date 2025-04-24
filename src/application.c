@@ -146,6 +146,30 @@ void print_every_T(App *self, int _) {
   AFTER(SEC(5), self, print_every_T, 0);
 }
 
+void heartbeat(App *self, int _) {
+  CANMsg h_msg = {10, NODE_ID, 0, {}};
+  int can_res = CAN_SEND(&can0, &h_msg);
+  if (can_res == 1) {  // Fail, no connection, alone in network, F3 Requirement
+    print("Silent Failure (F3)\n", 0);
+    self->can_connected = 0;
+    self->network_size = 1;
+    if (self->conductor != NODE_ID) {
+      ASYNC(&music_player, stop_music, 0 );
+    }
+    else {
+      ASYNC(&music_player, update_nth_note_to_play, 0);
+    }
+  }
+  else {
+    if (self->can_connected == 0) {
+      print("Can connected (F3).\n", 0);
+    }
+    self->can_connected = 1;
+  }
+  AFTER(MSEC(20), self, heartbeat, 0);
+}
+
+
 void reader(App *self, int c) {
   ASYNC(&userInputHandler, parse_user_input, c);
 }
@@ -155,6 +179,7 @@ void startApp(App *self, int arg) {
   SCI_INIT(&sci0);
   SIO_INIT(&sio0);
   SCI_WRITE(&sci0, "Ready.\n");
+  ASYNC(self, heartbeat, 0);
   AFTER(SEC(5), self, print_every_T, 0);
 }
 

@@ -40,6 +40,7 @@ typedef struct {
   int conductor;
   int evaling_conductor;
   int simulate_silent_fail;
+  int can_connected;
 } App;
 
 extern App app;
@@ -61,7 +62,7 @@ void switch_to_held_mode(App *self, int _);
 void button_press_logic(App *self, int _);
 void button_release_logic(App *self, int _);
 void switch_conductor(App *self, int _);
-void rankresp_heartbeat(App *self, int _);
+void heartbeat(App *self, int _);
 
 extern Serial sci0;
 
