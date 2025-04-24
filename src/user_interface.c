@@ -31,7 +31,7 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
     self->buf_index = 0;
     if (num == 1) {
       app.simulate_silent_fail = !app.simulate_silent_fail;
-      if (app.simulate_silent_fail && (app.conductor != NODE_ID) {
+      if (app.simulate_silent_fail && (app.conductor != NODE_ID)) {
         ASYNC(&music_player, stop_music, 0);
         print("Silent Failure", 0);
       }
