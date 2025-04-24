@@ -24,6 +24,9 @@
 #define NODE_ID 3
 #define MAX_NETWORK_SIZE 3
 #define CONDUCTOR_CLASH_MS 500
+#define MAX_NODE_RANK 15
+#define MIN_MISSED_CONS_HEARTBEATS 3
+#define HEARTBEAT_INTERVAL_MS 20
 
 typedef struct {
   Object super;
@@ -41,6 +44,7 @@ typedef struct {
   int evaling_conductor;
   int simulate_silent_fail;
   int can_connected;
+  int recvd_heartbeats[MAX_NODE_RANK];
 } App;
 
 extern App app;

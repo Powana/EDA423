@@ -147,8 +147,16 @@ void print_every_T(App *self, int _) {
 }
 
 void heartbeat(App *self, int _) {
+  if (self->simulate_silent_fail) {
+    AFTER(MSEC(HEARTBEAT_INTERVAL_MS), self, heartbeat, 0);
+    return;
+  }
+  
+  // Send heartbeat
   CANMsg h_msg = {10, NODE_ID, 0, {}};
   int can_res = CAN_SEND(&can0, &h_msg);
+  
+  // Check for CAN failure
   if (can_res == 1) {  // Fail, no connection, alone in network, F3 Requirement
     print("Silent Failure (F3)\n", 0);
     self->can_connected = 0;
@@ -166,7 +174,29 @@ void heartbeat(App *self, int _) {
     }
     self->can_connected = 1;
   }
-  AFTER(MSEC(20), self, heartbeat, 0);
+
+  // == Check others heartbeat
+  for (int i=0; i<self->network_size-1; i++) {
+    if (self->recvd_heartbeats[self->ranks[i]] <= -1)  { // Node died
+      print("Node death detected with rank %d.\n", self->ranks[i]);
+
+       // Shift elements to the left
+      for (int j = i; j < self->network_size - 1; j++) {
+        self->ranks[j] = self->ranks[j + 1];
+      }
+      self->network_size--;
+      ASYNC(&music_player, update_nth_note_to_play, 0);
+
+      if (self->network_size == 1 && self->conductor != NODE_ID) { // Left as a single musician, stop the music
+        ASYNC(&music_player, stop_music, 0 );
+      } 
+    }
+    else {
+      self->recvd_heartbeats[self->ranks[i]] -= 1; // Decrease every counter by 1 every INTERVAL seconds
+    }
+  }
+
+  AFTER(MSEC(HEARTBEAT_INTERVAL_MS), self, heartbeat, 0);
 }
 
 

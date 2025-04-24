@@ -102,6 +102,9 @@ void parse_can_input(App *self, int _) {
     case 8: // im new
         if(self->rank == msg.nodeId) return;
         break;
+    case 10: // Heartbeat
+        self->recvd_heartbeats[msg.msgId] = MIN_MISSED_CONS_HEARTBEATS;
+        break;
     default:
         break;
     }
