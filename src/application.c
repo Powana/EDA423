@@ -161,11 +161,9 @@ void heartbeat(App *self, int _) {
     print("Silent Failure (F3)\n", 0);
     self->can_connected = 0;
     self->network_size = 1;
+    ASYNC(&music_player, update_nth_note_to_play, 0);
     if (self->conductor != NODE_ID) {
       ASYNC(&music_player, stop_music, 0 );
-    }
-    else {
-      ASYNC(&music_player, update_nth_note_to_play, 0);
     }
   }
   else if (can_res == 0) {

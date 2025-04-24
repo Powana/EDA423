@@ -100,7 +100,21 @@ void parse_can_input(App *self, int _) {
 
         break;
     case 8: // im new
-        if(self->rank == msg.nodeId) return;
+        if (self->rank == msg.nodeId) return;
+        if (self->conductor == NODE_ID) { // Tell the new board what the current key and tempo is
+            CANMsg msg1; CANMsg msg2;
+            msg1.nodeId = NODE_ID;
+            msg1.msgId = 6;
+            msg1.length = 1;
+            msg1.buff[0] = music_player.key + 5;
+            CAN_SEND(&can0, &msg1);
+
+            msg2.msgId = 5;
+            msg2.length = 2;
+            msg2.buff[0] = music_player.tempo & 0x00ff;
+            msg2.buff[1] = (music_player.tempo >> 8) & 0xff;
+            CAN_SEND(&can0, &msg2);
+        }
         break;
     case 10: // Heartbeat
         self->recvd_heartbeats[msg.nodeId] = MIN_MISSED_CONS_HEARTBEATS -1;
