@@ -42,7 +42,7 @@ void adjust_volume(Tone_CTRL *tone_ctrl, int step) {
     return;
   }
   tone_ctrl->volume += step;
-  print("Volume is now %d", tone_ctrl->volume);
+  print("Volume is now %d\n", tone_ctrl->volume);
 }
 
 void set_period(Tone_CTRL *tone_ctrl, int t) {

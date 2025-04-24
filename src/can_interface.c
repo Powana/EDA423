@@ -1,30 +1,30 @@
 #include "application.h"
 
-int conductor = 3; // TODO Temp
 
 extern MusicPlayer music_player;
 void parse_can_input(App *self, int _) {
-    if (self->simulate_silent_fail) return;
     CANMsg msg;
     CANMsg respMsg;
     CAN_RECEIVE(&can0, &msg);
+    if (self->simulate_silent_fail) return;
     
     int new_nodeID = 1;
-    for (int i=0; i<MAX_NETWORK_SIZE; i++) {
+    for (int i=0; i<self->network_size-1; i++) {
         if (self->ranks[i] == msg.nodeId) new_nodeID = 0;
     }
     if (new_nodeID && msg.nodeId != self->rank) {
+        print("New Node with rank %d\n", msg.nodeId);
         self->ranks[self->network_size-1] = msg.nodeId;
         self->network_size++;
-        // if (msg.nodeId < NODE_ID) music_player.cur_note_modulo++; // TODO decrease on node leave
+        self->recvd_heartbeats[msg.nodeId] = MIN_MISSED_CONS_HEARTBEATS -1;
         SYNC(&music_player, update_nth_note_to_play, 0);
         if (msg.msgId == 7) {
             CANMsg msg = {8,self->rank,0,{}};
             CAN_SEND(&can0, &msg);
         }
-    }
+    } // TODO: Im new message, respond with a set key and set tempo msg with current values
     
-    if ((msg.msgId != 7) && (msg.msgId != 0)) {
+    if ((msg.msgId != 7) && (msg.msgId != 0) && (msg.msgId != 10)) {
         print("Can MSG Recieved, msgId: %d ", msg.msgId);
         print("NodeID: %d ", msg.nodeId);
         print("Length: %d ", msg.length);
@@ -103,7 +103,7 @@ void parse_can_input(App *self, int _) {
         if(self->rank == msg.nodeId) return;
         break;
     case 10: // Heartbeat
-        self->recvd_heartbeats[msg.msgId] = MIN_MISSED_CONS_HEARTBEATS;
+        self->recvd_heartbeats[msg.nodeId] = MIN_MISSED_CONS_HEARTBEATS -1;
         break;
     default:
         break;

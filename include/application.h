@@ -18,15 +18,15 @@
 #define T_769_Hz 650
 #define T_537_Hz 931
 #define T_384_Hz 1300
-#define VOLUME 3
+#define VOLUME 8
 #define DEFAULT_TEMPO 120
 #define DEFAULT_KEY 0
 #define NODE_ID 3
 #define MAX_NETWORK_SIZE 3
-#define CONDUCTOR_CLASH_MS 500
+#define CONDUCTOR_CLASH_MS 200
 #define MAX_NODE_RANK 15
 #define MIN_MISSED_CONS_HEARTBEATS 3
-#define HEARTBEAT_INTERVAL_MS 20
+#define HEARTBEAT_INTERVAL_MS 25
 
 typedef struct {
   Object super;

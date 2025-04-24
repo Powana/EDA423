@@ -44,7 +44,7 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
       print("Silent Failure", 0);
       SEND(SEC(15), 0, self, unset_failure, 0); // TODO Make 15 secs random between 10..30
     }
-    
+    break;
 
 
   case 'o':

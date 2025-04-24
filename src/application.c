@@ -3,7 +3,7 @@
 #define PRESS_MOMENTARY 0
 #define PRESS_AND_HOLD 1
 
-App app = {initObject(), initTimer(), initTimer(), .user_button_mode=0, .trigger_mode=0, .inter_arrival_times={}, .tap_count=0, .bounce_flag=0, .rank=NODE_ID, .ranks={}, .network_size=1, .conductor=-1, .evaling_conductor=0};
+App app = {initObject(), initTimer(), initTimer(), .user_button_mode=0, .trigger_mode=0, .inter_arrival_times={}, .tap_count=0, .bounce_flag=0, .rank=NODE_ID, .ranks={}, .network_size=1, .conductor=-1, .evaling_conductor=0, .simulate_silent_fail=0, .can_connected=0, .recvd_heartbeats={}};
 
 MusicPlayer music_player = {initObject(), DEFAULT_KEY, DEFAULT_TEMPO, .note_idx=-1, .is_playing=0, .is_led_blinking=0, .nth_note_to_play=0, .current_note_segment=0, .force_mute = 0};
 UserInputHandler userInputHandler = {initObject(), {}, 0};
@@ -157,7 +157,7 @@ void heartbeat(App *self, int _) {
   int can_res = CAN_SEND(&can0, &h_msg);
   
   // Check for CAN failure
-  if (can_res == 1) {  // Fail, no connection, alone in network, F3 Requirement
+  if (can_res == 1 && self->can_connected) {  // Fail, no connection, alone in network, F3 Requirement
     print("Silent Failure (F3)\n", 0);
     self->can_connected = 0;
     self->network_size = 1;
@@ -168,7 +168,7 @@ void heartbeat(App *self, int _) {
       ASYNC(&music_player, update_nth_note_to_play, 0);
     }
   }
-  else {
+  else if (can_res == 0) {
     if (self->can_connected == 0) {
       print("Can connected (F3).\n", 0);
     }
@@ -176,7 +176,9 @@ void heartbeat(App *self, int _) {
   }
 
   // == Check others heartbeat
+  //print("Check heartbeats. Network size %d. ", self->network_size);
   for (int i=0; i<self->network_size-1; i++) {
+    //print("i: %d. ", i);
     if (self->recvd_heartbeats[self->ranks[i]] <= -1)  { // Node died
       print("Node death detected with rank %d.\n", self->ranks[i]);
 
@@ -192,6 +194,7 @@ void heartbeat(App *self, int _) {
       } 
     }
     else {
+      //print("No node death at that i. The recv_heartbeats val is: %d.\n", self->recvd_heartbeats[self->ranks[i]]);
       self->recvd_heartbeats[self->ranks[i]] -= 1; // Decrease every counter by 1 every INTERVAL seconds
     }
   }

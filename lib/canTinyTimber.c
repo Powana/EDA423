@@ -162,7 +162,7 @@ int can_send(Can *self, CANMsg *msg){
 	while (CAN_TransmitStatus(canport, TransmitMailbox) == CAN_TxStatus_Pending) ;
 	
 	if (CAN_TransmitStatus(canport, TransmitMailbox) == CAN_TxStatus_Failed) {
-		DUMP("CAN Tx fail!\n\r");
+		// DUMP("CAN Tx fail!\n\r"); TODO: Remove
 		return 1;
 	}
 #endif
