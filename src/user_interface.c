@@ -31,17 +31,18 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
     self->buf_index = 0;
     if (num == 1) {
       app.simulate_silent_fail = !app.simulate_silent_fail;
-      if (app.simulate_silent_fail) {
+      if (app.simulate_silent_fail && (app.conductor != NODE_ID) {
         ASYNC(&music_player, stop_music, 0);
         print("Silent Failure", 0);
       }
       else {
-        print("Leave Silent Failure", 0);
+        print("Leave Silent Failure (F1)\n", 0);
       }
     }
     else if (num == 2) {
+      print("Silent Failure (F2)\n", 0);
       app.simulate_silent_fail = 1;
-      print("Silent Failure", 0);
+      if (app.conductor != NODE_ID) ASYNC(&music_player, stop_music, 0);
       SEND(SEC(15), 0, self, unset_failure, 0); // TODO Make 15 secs random between 10..30
     }
     break;

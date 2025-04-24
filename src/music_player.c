@@ -87,11 +87,11 @@ void check_segment(MusicPlayer *music_player, int _) {
   */
   if (music_player->note_idx % app.network_size != music_player->nth_note_to_play && ((&tone_ctrl)->mute == 0)) {// New board joined that has respnsibility for this note, TODO:  && )Add support for the silence at end of tones
     SEND(USEC(segment_duration_us), USEC(segment_duration_us/8), &tone_ctrl, mute_tone, 0);
-    print("Segment: Muted tone\n", 0);
+    // print("Segment: Muted tone\n", 0);
   }
   if (music_player->note_idx % app.network_size == music_player->nth_note_to_play && ((&tone_ctrl)->mute == 1) && !music_player->force_mute) {  // We are playing our assigned note, or we have just jumped in and should start playing next segment
     SEND(USEC(segment_duration_us), USEC(segment_duration_us/8), &tone_ctrl, unmute_tone, 0);
-    print("Segment: Unmuted tone\n", 0);
+    // print("Segment: Unmuted tone\n", 0);
   }
   
   music_player->current_note_segment++;
