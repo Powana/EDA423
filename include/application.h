@@ -45,6 +45,7 @@ typedef struct {
   int simulate_silent_fail;
   int can_connected;
   int recvd_heartbeats[MAX_NODE_RANK];
+  int should_print;
 } App;
 
 extern App app;

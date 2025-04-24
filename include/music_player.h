@@ -18,6 +18,7 @@ typedef struct {
   int nth_note_to_play;
   int current_note_segment;
   int force_mute;
+  int segment_duration_us;
 } MusicPlayer;
 
 void play_music(MusicPlayer *music_player, int _);

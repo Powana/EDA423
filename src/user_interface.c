@@ -102,11 +102,14 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
     msg.buff[1] = (num >> 8) & 0xff;
     CAN_SEND(&can0, &msg);
     break;
-  case 'm':
+  case 'T':
     ASYNC(&tone_ctrl, toggle_user_mute, 0);
     // msg.length = 1;
     // msg.buff[0] = 'm';
     // CAN_SEND(&can0, &msg);
+    break;
+  case 'X':
+    app.should_print = !app.should_print;
     break;
   case 'i':
     ASYNC(&tone_ctrl, adjust_volume, 1);

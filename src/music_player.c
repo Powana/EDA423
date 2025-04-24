@@ -57,6 +57,8 @@ void play_next_note(MusicPlayer *music_player, int _) {
   }
   
   int note_duration_us = (60000000.0 / music_player->tempo) * note_length;
+  music_player->segment_duration_us = (60000000.0 / music_player->tempo) / 8;  // TODO Maybe move caclulation outside of function
+
   SYNC(&tone_ctrl, set_period, half_period);
 
   // MUTE at end of note
@@ -77,7 +79,7 @@ void funmute(MusicPlayer *music_player, int _) {
 
 void check_segment(MusicPlayer *music_player, int _) {
   if (!music_player->is_playing) return;
-  int segment_duration_us = (60000000.0 / music_player->tempo) / 8;  // TODO Maybe move caclulation outside of function
+  if (music_player->current_note_segment == 0) music_player->segment_duration_us = (60000000.0 / music_player->tempo) / 8;
   /*
   print("Segment_duration (us): %d ", segment_duration_us);
   print("nth_note_to_play: %d ", music_player->nth_note_to_play);
@@ -86,18 +88,18 @@ void check_segment(MusicPlayer *music_player, int _) {
   print("app.network_size: %d \n", app.network_size);
   */
   if (music_player->note_idx % app.network_size != music_player->nth_note_to_play && ((&tone_ctrl)->mute == 0)) {// New board joined that has respnsibility for this note, TODO:  && )Add support for the silence at end of tones
-    SEND(USEC(segment_duration_us), USEC(segment_duration_us/8), &tone_ctrl, mute_tone, 0);
+    SEND(USEC(music_player->segment_duration_us), USEC(music_player->segment_duration_us/8), &tone_ctrl, mute_tone, 0);
     // print("Segment: Muted tone\n", 0);
   }
   if (music_player->note_idx % app.network_size == music_player->nth_note_to_play && ((&tone_ctrl)->mute == 1) && !music_player->force_mute) {  // We are playing our assigned note, or we have just jumped in and should start playing next segment
-    SEND(USEC(segment_duration_us), USEC(segment_duration_us/8), &tone_ctrl, unmute_tone, 0);
+    SEND(USEC(music_player->segment_duration_us), USEC(music_player->segment_duration_us/8), &tone_ctrl, unmute_tone, 0);
     // print("Segment: Unmuted tone\n", 0);
   }
   
   music_player->current_note_segment++;
 
-  SEND(0, USEC(segment_duration_us/8), music_player, im_alive_ping, music_player->note_idx % app.network_size != music_player->nth_note_to_play);
-  SEND(USEC(segment_duration_us), USEC(segment_duration_us/8), music_player, check_segment, 0);
+  SEND(0, USEC(music_player->segment_duration_us/8), music_player, im_alive_ping, music_player->note_idx % app.network_size != music_player->nth_note_to_play);
+  SEND(USEC(music_player->segment_duration_us), USEC(music_player->segment_duration_us/8), music_player, check_segment, 0);
 }
 
 void change_key(MusicPlayer *music_player, int key) { music_player->key = key; }

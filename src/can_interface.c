@@ -110,6 +110,7 @@ void parse_can_input(App *self, int _) {
             CAN_SEND(&can0, &msg1);
 
             msg2.msgId = 5;
+            msg2.nodeId = NODE_ID;
             msg2.length = 2;
             msg2.buff[0] = music_player.tempo & 0x00ff;
             msg2.buff[1] = (music_player.tempo >> 8) & 0xff;

@@ -139,9 +139,9 @@ void switch_conductor(App* self, int _) {
 
 void print_every_T(App *self, int _) {
   if(self->conductor == NODE_ID) {
-    print("Tempo: %d\n", music_player.tempo);
+    if (self->should_print) print("Tempo: %d\n", music_player.tempo);
   } else {
-    if(tone_ctrl.mute) print("MUTED\n", 0);
+    if(tone_ctrl.user_mute && self->should_print) print("MUTED\n", 0);
   }
   AFTER(SEC(5), self, print_every_T, 0);
 }
