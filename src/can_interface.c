@@ -6,8 +6,8 @@ CANMsg can_msg = {0,0,0,{}};
 // === Problem 5 ===
 void can_regulator(App *self, int _) {
     if (self->can_queue_size == MAX_CAN_QUEUE_SIZE) return;  // Queue is full, discard the message
+    CAN_RECEIVE(&can0, &can_msg); // TODO: Check intended behaviour, if we recieve but dont dilver: Move this line up one;
     self->can_queue_end = (self->can_queue_end + 1) % MAX_CAN_QUEUE_SIZE;
-    CAN_RECEIVE(&can0, &can_msg);
     self->can_queue[self->can_queue_end].msgId = can_msg.msgId;
     self->can_queue[self->can_queue_end].arrival_time = T_SAMPLE(&self->app_start_time);
     self->can_queue_size++;
