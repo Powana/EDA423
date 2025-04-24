@@ -13,5 +13,6 @@ typedef struct UserInputHandler {
 } UserInputHandler;
 
 void parse_user_input(UserInputHandler *userInputHandler, int c);
+void unset_failure(UserInputHandler *self, int _);
 
 #endif

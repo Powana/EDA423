@@ -4,6 +4,7 @@ int conductor = 3; // TODO Temp
 
 extern MusicPlayer music_player;
 void parse_can_input(App *self, int _) {
+    if (self->simulate_silent_fail) return;
     CANMsg msg;
     CANMsg respMsg;
     CAN_RECEIVE(&can0, &msg);
@@ -17,6 +18,10 @@ void parse_can_input(App *self, int _) {
         self->network_size++;
         // if (msg.nodeId < NODE_ID) music_player.cur_note_modulo++; // TODO decrease on node leave
         SYNC(&music_player, update_nth_note_to_play, 0);
+        if (msg.msgId == 7) {
+            CANMsg msg = {8,self->rank,0,{}};
+            CAN_SEND(&can0, &msg);
+        }
     }
     
     if ((msg.msgId != 7) && (msg.msgId != 0)) {
@@ -83,12 +88,17 @@ void parse_can_input(App *self, int _) {
         ASYNC(&music_player, change_key, num);
         break;
     case 7: // im alive
-        if (self->network_size == 1) {
-            CANMsg msg = {8,self->rank,0,{}};
-            CAN_SEND(&can0, &msg);
-            self->network_size += 1;
-            // TODO add to known nodes
+        // Sending Im New is handled above
+
+        // Join the melody if another board is playing
+        if (msg.length == 2 && !music_player.is_playing) {
+            music_player.note_idx = msg.buff[0];
+            music_player.current_note_segment = msg.buff[1];
+            ASYNC(&music_player, update_nth_note_to_play, 0);
+            ASYNC(&music_player, play_music, 0);
         }
+
+        break;
     case 8: // im new
         if(self->rank == msg.nodeId) return;
         break;

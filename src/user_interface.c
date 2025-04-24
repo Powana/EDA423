@@ -17,7 +17,7 @@ extern App app;
 
 void parse_user_input(UserInputHandler *self, int inputDigit) {
   switch ((char)inputDigit) {
-  case 'z':
+  case 'M':
     print("Our node: %d ", NODE_ID);
     print("is cond: %d\n", app.conductor == NODE_ID);
     for (int i=0; i<app.network_size-1; i++) {
@@ -25,6 +25,28 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
       print("is cond: %d\n", app.conductor == app.ranks[i]);
     }
     break;
+  case 'F':
+    self->in_buffer[self->buf_index] = '\0';
+    num = atoi(self->in_buffer);
+    self->buf_index = 0;
+    if (num == 1) {
+      app.simulate_silent_fail = !app.simulate_silent_fail;
+      if (app.simulate_silent_fail) {
+        ASYNC(&music_player, stop_music, 0);
+        print("Silent Failure", 0);
+      }
+      else {
+        print("Leave Silent Failure", 0);
+      }
+    }
+    else if (num == 2) {
+      app.simulate_silent_fail = 1;
+      print("Silent Failure", 0);
+      SEND(SEC(15), 0, self, unset_failure, 0); // TODO Make 15 secs random between 10..30
+    }
+    
+
+
   case 'o':
     if (app.conductor != app.rank) {
       print("Requesting conductor mode\n", 0);
@@ -122,3 +144,7 @@ void parse_user_input(UserInputHandler *self, int inputDigit) {
   }
 }
 
+void unset_failure(UserInputHandler *self, int _) {
+  app.simulate_silent_fail = 0;
+  print("Leave Silent Failure", 0);
+}
