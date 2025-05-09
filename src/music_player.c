@@ -108,7 +108,7 @@ void im_alive_ping(MusicPlayer *music_player, int send_data) {
   if (!music_player->is_playing) {
     return;
   }
-  CANMsg msg = {7, 3, 0, {0,0}};
+  CANMsg msg = {7, NODE_ID, 0, {0,0}};
   if (send_data) {
     msg.length = 2;
     msg.buff[0] = music_player->note_idx;

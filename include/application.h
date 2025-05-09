@@ -21,7 +21,7 @@
 #define VOLUME 3
 #define DEFAULT_TEMPO 120
 #define DEFAULT_KEY 0
-#define NODE_ID 3
+#define NODE_ID 1 // 3
 #define MAX_NETWORK_SIZE 3
 #define CONDUCTOR_CLASH_MS 500
 
